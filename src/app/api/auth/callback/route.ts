@@ -1,88 +1,63 @@
 import { NextRequest, NextResponse } from "next/server";
-import axios from "axios";
+import { google } from "googleapis";
 import supabaseAdmin from "@/lib/supabaseAdmin";
+import { v5 as uuidv5 } from "uuid";
+
+const oauth2Client = new google.auth.OAuth2(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  process.env.GOOGLE_REDIRECT_URI
+);
 
 export async function GET(req: NextRequest) {
-  console.log("Received callback request");
   const { searchParams } = new URL(req.url);
   const code = searchParams.get("code");
+  const error = searchParams.get("error");
 
-  if (!code) {
-    console.error("No authorization code received");
+  if (error) {
     return NextResponse.json(
-      { error: "No authorization code received" },
+      { error: `OAuth error: ${error}` },
       { status: 400 }
     );
   }
 
+  if (!code) {
+    return NextResponse.json({ error: "Missing code" }, { status: 400 });
+  }
+
   try {
-    console.log("Processing callback with code:", code);
+    const { tokens } = await oauth2Client.getToken(code);
 
-    const tokenResponse = await axios.post(
-      "https://oauth2.googleapis.com/token",
-      {
-        code,
-        client_id: process.env.GOOGLE_CLIENT_ID,
-        client_secret: process.env.GOOGLE_CLIENT_SECRET,
-        redirect_uri: process.env.GOOGLE_REDIRECT_URI,
-        grant_type: "authorization_code",
-      }
-    );
-
-    console.log("Received token response:", tokenResponse.data);
-
-    const { access_token, refresh_token, expires_in, id_token } =
-      tokenResponse.data;
-
-    const b64Payload = id_token.split(".")[1];
-    const payload = JSON.parse(Buffer.from(b64Payload, "base64").toString());
+    const b64Payload = tokens.id_token?.split(".")[1];
+    const payload = JSON.parse(Buffer.from(b64Payload!, "base64").toString());
     const userId = payload.sub;
 
-    const expiresAt = new Date(Date.now() + expires_in * 1000);
-
+    // store access and refresh tokens to supabase
     const { error } = await supabaseAdmin.from("user_tokens").upsert({
-      user_id: userId,
-      access_token: access_token,
-      refresh_token: refresh_token,
-      expires_at: expiresAt,
+      user_id: uuidv5(userId, process.env.NAMESPACE!),
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
+      expires_at: new Date(tokens.expiry_date!).toISOString(),
     });
 
     if (error) {
-      console.error("Error upserting user token:", error);
+      console.error("Error storing tokens:", error);
       return NextResponse.json(
-        { error: "Failed to upsert user token" },
+        { error: "Failed to store tokens", details: error },
         { status: 500 }
       );
     }
 
-    console.log("User token upserted successfully");
+    console.log("Tokens stored successfully");
 
-    // Redirect back to the main page or show success
-    return new NextResponse(
-      `
-      <html>
-        <body>
-          <h1>Authentication Successful!</h1>
-          <p>You have been successfully logged in. You can close this window.</p>
-          <script>
-            setTimeout(() => {
-              window.location.href = '/';
-            }, 2000);
-          </script>
-        </body>
-      </html>
-    `,
-      {
-        status: 200,
-        headers: {
-          "Content-Type": "text/html",
-        },
-      }
-    );
+    return NextResponse.redirect(new URL("/", req.url));
   } catch (error) {
-    console.error("Error exchanging code for token:", error);
+    console.error("OAuth error:", error);
     return NextResponse.json(
-      { error: "Failed to authenticate" },
+      {
+        error: "Google OAuth error, failed to exchange code for tokens",
+        details: error,
+      },
       { status: 500 }
     );
   }

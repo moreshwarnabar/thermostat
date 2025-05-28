@@ -9,7 +9,7 @@ export async function GET() {
     client_id: process.env.GOOGLE_CLIENT_ID,
     redirect_uri: process.env.GOOGLE_REDIRECT_URI,
     response_type: "code",
-    scope: process.env.GOOGLE_SDM_SCOPE,
+    scope: `openid ${process.env.GOOGLE_SDM_SCOPE}`,
     access_type: "offline",
     prompt: "consent",
   });
