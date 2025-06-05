@@ -5,6 +5,7 @@ import TemperatureCard from "@/app/components/TemperatureCard";
 import StartTimeCard from "@/app/components/StartTimeCard";
 import EndTimeCard from "@/app/components/EndTimeCard";
 import LoginHeader from "./LoginHeader";
+import SchedulesCard from "@/app/components/SchedulesCard";
 
 export default function ThermostatContainer() {
   const [temperature, setTemperature] = useState(25);
@@ -158,6 +159,9 @@ export default function ThermostatContainer() {
           onDecreaseMinute={decreaseEndMinute}
         />
       </div>
+
+      {/* Schedule History */}
+      <SchedulesCard />
     </div>
   );
 }
