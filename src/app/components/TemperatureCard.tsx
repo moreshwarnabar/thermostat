@@ -16,14 +16,14 @@ export default function TemperatureCard({
       {/* Temperature Display and Controls */}
       <div className="flex flex-col items-center space-y-4">
         <div className="text-6xl font-bold text-blue-600 dark:text-blue-400">
-          {temperature}°F
+          {temperature}°C
         </div>
 
         <div className="flex items-center space-x-4">
           <button
             onClick={onDecrease}
             className="w-12 h-12 bg-red-500 hover:bg-red-600 text-white font-bold text-2xl rounded-full transition-colors flex items-center justify-center"
-            disabled={temperature <= 50}
+            disabled={temperature <= 12}
           >
             -
           </button>
@@ -37,14 +37,14 @@ export default function TemperatureCard({
           <button
             onClick={onIncrease}
             className="w-12 h-12 bg-green-500 hover:bg-green-600 text-white font-bold text-2xl rounded-full transition-colors flex items-center justify-center"
-            disabled={temperature >= 90}
+            disabled={temperature >= 32}
           >
             +
           </button>
         </div>
 
         <div className="text-sm text-gray-500 dark:text-gray-400">
-          Range: 50°F - 90°F
+          Range: 12°C - 32°C
         </div>
       </div>
     </div>

@@ -7,18 +7,18 @@ import EndTimeCard from "@/app/components/EndTimeCard";
 import LoginHeader from "./LoginHeader";
 
 export default function ThermostatContainer() {
-  const [temperature, setTemperature] = useState(72);
+  const [temperature, setTemperature] = useState(25);
   const [startHour, setStartHour] = useState(8);
   const [startMinute, setStartMinute] = useState(0);
   const [endHour, setEndHour] = useState(18);
   const [endMinute, setEndMinute] = useState(0);
 
   const increaseTemp = () => {
-    setTemperature((prev) => Math.min(prev + 1, 90)); // Max temp 90°F
+    setTemperature((prev) => Math.min(prev + 1, 32)); // Max temp 32°C
   };
 
   const decreaseTemp = () => {
-    setTemperature((prev) => Math.max(prev - 1, 50)); // Min temp 50°F
+    setTemperature((prev) => Math.max(prev - 1, 12)); // Min temp 12°C
   };
 
   const increaseHour = () => {
@@ -53,10 +53,48 @@ export default function ThermostatContainer() {
     setEndMinute((prev) => (prev - 15 + 60) % 60);
   };
 
+  const handleSubmitSchedule = async () => {
+    const scheduleData = {
+      temperature,
+      startTime: {
+        hour: startHour,
+        minute: startMinute,
+      },
+      endTime: {
+        hour: endHour,
+        minute: endMinute,
+      },
+    };
+
+    console.log("Submitting schedule:", scheduleData);
+
+    try {
+      // TODO: Replace with actual API call
+      // const response = await fetch('/api/schedule', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(scheduleData),
+      // });
+
+      alert(
+        `Schedule submitted!\nTemperature: ${temperature}°C\nStart: ${startHour
+          .toString()
+          .padStart(2, "0")}:${startMinute
+          .toString()
+          .padStart(2, "0")}\nEnd: ${endHour
+          .toString()
+          .padStart(2, "0")}:${endMinute.toString().padStart(2, "0")}`
+      );
+    } catch (error) {
+      console.error("Error submitting schedule:", error);
+      alert("Failed to submit schedule. Please try again.");
+    }
+  };
+
   return (
     <div className="space-y-8">
       {/* Header with Login Button */}
-      <LoginHeader />
+      <LoginHeader onSubmitSchedule={handleSubmitSchedule} />
       {/* Thermostat Controls */}
       <div className="flex flex-col lg:flex-row gap-8 lg:gap-6">
         <TemperatureCard
