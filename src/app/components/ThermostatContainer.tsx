@@ -24,10 +24,35 @@ export default function ThermostatContainer() {
   const [isAuthLoading, setIsAuthLoading] = useState(true);
 
   // Current thermostat settings state
-  const [currentSettings, setCurrentSettings] = useState<ThermostatData>({
-    temperature: 25,
-    startTime: { hour: 8, minute: 0, date: new Date() },
-    endTime: { hour: 18, minute: 0, date: new Date() },
+  const [currentSettings, setCurrentSettings] = useState<ThermostatData>(() => {
+    const now = new Date();
+
+    // Round to next 15-minute interval
+    const currentMinutes = now.getMinutes();
+    const roundedMinutes = Math.ceil(currentMinutes / 15) * 15;
+
+    const startTime = new Date(now);
+    if (roundedMinutes >= 60) {
+      startTime.setHours(startTime.getHours() + 1, 0, 0, 0);
+    } else {
+      startTime.setMinutes(roundedMinutes, 0, 0);
+    }
+
+    const endTime = new Date(startTime.getTime() + 3 * 60 * 60 * 1000); // Add 3 hours
+
+    return {
+      temperature: 25,
+      startTime: {
+        hour: startTime.getHours(),
+        minute: startTime.getMinutes(),
+        date: new Date(startTime),
+      },
+      endTime: {
+        hour: endTime.getHours(),
+        minute: endTime.getMinutes(),
+        date: new Date(endTime),
+      },
+    };
   });
 
   // Schedules state moved from SchedulesCard
@@ -165,7 +190,10 @@ export default function ThermostatContainer() {
       />
 
       {/* Thermostat Settings */}
-      <ThermostatSettings onSettingsChange={handleSettingsChange} />
+      <ThermostatSettings
+        onSettingsChange={handleSettingsChange}
+        currentSettings={currentSettings}
+      />
 
       {/* Schedule Display */}
       <SchedulesCard

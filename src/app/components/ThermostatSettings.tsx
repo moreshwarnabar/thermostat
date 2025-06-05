@@ -20,21 +20,35 @@ export interface ThermostatData {
 
 interface ThermostatSettingsProps {
   onSettingsChange: (data: ThermostatData) => void;
+  currentSettings?: ThermostatData;
 }
 
 export default function ThermostatSettings({
   onSettingsChange,
+  currentSettings,
 }: ThermostatSettingsProps) {
   const today = new Date();
   today.setHours(0, 0, 0, 0); // Reset time to midnight for consistency
 
-  const [temperature, setTemperature] = useState(25);
-  const [startHour, setStartHour] = useState(8);
-  const [startMinute, setStartMinute] = useState(0);
-  const [startDate, setStartDate] = useState(new Date(today));
-  const [endHour, setEndHour] = useState(18);
-  const [endMinute, setEndMinute] = useState(0);
-  const [endDate, setEndDate] = useState(new Date(today));
+  const [temperature, setTemperature] = useState(
+    currentSettings?.temperature ?? 25
+  );
+  const [startHour, setStartHour] = useState(
+    currentSettings?.startTime.hour ?? 8
+  );
+  const [startMinute, setStartMinute] = useState(
+    currentSettings?.startTime.minute ?? 0
+  );
+  const [startDate, setStartDate] = useState(
+    currentSettings?.startTime.date ?? new Date(today)
+  );
+  const [endHour, setEndHour] = useState(currentSettings?.endTime.hour ?? 18);
+  const [endMinute, setEndMinute] = useState(
+    currentSettings?.endTime.minute ?? 0
+  );
+  const [endDate, setEndDate] = useState(
+    currentSettings?.endTime.date ?? new Date(today)
+  );
 
   // Helper functions to check if decrease buttons should be disabled
   const isStartDateDecreaseDisabled = () => {
