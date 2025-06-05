@@ -1,3 +1,4 @@
+import updateThermostat from "@/lib/services/updateThermostat";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -18,14 +19,16 @@ export async function POST(request: NextRequest) {
     let parsedData;
     try {
       parsedData = JSON.parse(decodedData);
+      console.log("Decoded Pub/Sub message:", parsedData);
+
+      await updateThermostat(parsedData);
     } catch {
-      parsedData = decodedData;
+      console.error("Error parsing decoded data into JSON:", decodedData);
+      return NextResponse.json(
+        { error: "Failed to parse decoded data into JSON" },
+        { status: 400 }
+      );
     }
-
-    console.log("Decoded Pub/Sub message:", parsedData);
-
-    // TODO: Process the thermostat data here
-    // This is where you would handle the actual thermostat logic
 
     return NextResponse.json({ status: "success" }, { status: 200 });
   } catch (error) {

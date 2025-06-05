@@ -33,3 +33,21 @@ export interface ThermostatTraits {
   "sdm.devices.traits.ThermostatEco"?: ThermostatEco;
   "sdm.devices.traits.ThermostatTemperatureSetpoint"?: ThermostatTemperatureSetpoint;
 }
+
+export interface Credentials {
+  access_token: string;
+  refresh_token: string;
+  id_token: string;
+  expiry_date: number;
+}
+
+export interface ExecuteCommandBody {
+  command: string;
+  params: Record<string, string | number>;
+}
+
+export interface AuthHeaders {
+  Authorization: string;
+  "Content-Type": string;
+  [key: string]: string;
+}

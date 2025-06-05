@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { google } from "googleapis";
-import supabaseAdmin from "@/lib/supabaseAdmin";
-import { v5 as uuidv5 } from "uuid";
+import { storeAuthToken } from "@/lib/services/db";
+import { Credentials } from "@/lib/types";
 
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
@@ -28,17 +28,7 @@ export async function GET(req: NextRequest) {
   try {
     const { tokens } = await oauth2Client.getToken(code);
 
-    const b64Payload = tokens.id_token?.split(".")[1];
-    const payload = JSON.parse(Buffer.from(b64Payload!, "base64").toString());
-    const userId = payload.sub;
-
-    // store access and refresh tokens to supabase
-    const { error } = await supabaseAdmin.from("user_tokens").upsert({
-      user_id: uuidv5(userId, process.env.NAMESPACE!),
-      access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token,
-      expires_at: new Date(tokens.expiry_date!).toISOString(),
-    });
+    const error = await storeAuthToken(tokens as Credentials);
 
     if (error) {
       console.error("Error storing tokens:", error);
