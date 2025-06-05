@@ -28,7 +28,10 @@ export async function GET(req: NextRequest) {
   try {
     const { tokens } = await oauth2Client.getToken(code);
 
-    const error = await storeAuthToken(tokens as Credentials);
+    // Create the redirect response first so we can pass it to storeAuthToken
+    const redirectResponse = NextResponse.redirect(new URL("/", req.url));
+
+    const error = await storeAuthToken(tokens as Credentials, redirectResponse);
 
     if (error) {
       console.error("Error storing tokens:", error);
@@ -40,7 +43,7 @@ export async function GET(req: NextRequest) {
 
     console.log("Tokens stored successfully");
 
-    return NextResponse.redirect(new URL("/", req.url));
+    return redirectResponse;
   } catch (error) {
     console.error("OAuth error:", error);
     return NextResponse.json(

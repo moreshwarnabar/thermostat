@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import TemperatureCard from "@/app/components/TemperatureCard";
 import StartTimeCard from "@/app/components/StartTimeCard";
 import EndTimeCard from "@/app/components/EndTimeCard";
@@ -12,6 +12,37 @@ export default function ThermostatContainer() {
   const [startMinute, setStartMinute] = useState(0);
   const [endHour, setEndHour] = useState(18);
   const [endMinute, setEndMinute] = useState(0);
+
+  // Authentication state
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
+
+  useEffect(() => {
+    checkAuthStatus();
+  }, []);
+
+  const checkAuthStatus = async () => {
+    try {
+      const response = await fetch("/api/auth/status");
+      const data = await response.json();
+      setIsAuthenticated(data.authenticated);
+    } catch (error) {
+      console.error("Error checking auth status:", error);
+      setIsAuthenticated(false);
+    } finally {
+      setIsAuthLoading(false);
+    }
+  };
+
+  const handleLogin = () => {
+    // Redirect to the login API route which handles the Google OAuth flow
+    window.location.href = "/api/auth/login";
+  };
+
+  const handleLogout = () => {
+    // Redirect to logout API route
+    window.location.href = "/api/auth/logout";
+  };
 
   const increaseTemp = () => {
     setTemperature((prev) => Math.min(prev + 1, 32)); // Max temp 32°C
@@ -94,7 +125,13 @@ export default function ThermostatContainer() {
   return (
     <div className="space-y-8">
       {/* Header with Login Button */}
-      <LoginHeader onSubmitSchedule={handleSubmitSchedule} />
+      <LoginHeader
+        onSubmitSchedule={handleSubmitSchedule}
+        isAuthenticated={isAuthenticated}
+        isAuthLoading={isAuthLoading}
+        onLogin={handleLogin}
+        onLogout={handleLogout}
+      />
       {/* Thermostat Controls */}
       <div className="flex flex-col lg:flex-row gap-8 lg:gap-6">
         <TemperatureCard
