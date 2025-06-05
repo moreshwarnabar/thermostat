@@ -34,6 +34,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      schedules: {
+        Row: {
+          created_at: string
+          end_time: string | null
+          id: number
+          start_time: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          end_time?: string | null
+          id?: number
+          start_time?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          end_time?: string | null
+          id?: number
+          start_time?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedules_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_tokens"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       user_tokens: {
         Row: {
           access_token: string | null

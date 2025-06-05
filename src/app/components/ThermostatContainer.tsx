@@ -1,22 +1,23 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import TemperatureCard from "@/app/components/TemperatureCard";
-import StartTimeCard from "@/app/components/StartTimeCard";
-import EndTimeCard from "@/app/components/EndTimeCard";
 import LoginHeader from "./LoginHeader";
-import SchedulesCard from "@/app/components/SchedulesCard";
+import ThermostatSettings, {
+  ThermostatData,
+} from "@/app/components/ThermostatSettings";
+import ScheduleDisplay from "@/app/components/ScheduleDisplay";
 
 export default function ThermostatContainer() {
-  const [temperature, setTemperature] = useState(25);
-  const [startHour, setStartHour] = useState(8);
-  const [startMinute, setStartMinute] = useState(0);
-  const [endHour, setEndHour] = useState(18);
-  const [endMinute, setEndMinute] = useState(0);
-
   // Authentication state
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
+
+  // Current thermostat settings state
+  const [currentSettings, setCurrentSettings] = useState<ThermostatData>({
+    temperature: 25,
+    startTime: { hour: 8, minute: 0 },
+    endTime: { hour: 18, minute: 0 },
+  });
 
   useEffect(() => {
     checkAuthStatus();
@@ -45,77 +46,33 @@ export default function ThermostatContainer() {
     window.location.href = "/api/auth/logout";
   };
 
-  const increaseTemp = () => {
-    setTemperature((prev) => Math.min(prev + 1, 32)); // Max temp 32°C
-  };
-
-  const decreaseTemp = () => {
-    setTemperature((prev) => Math.max(prev - 1, 12)); // Min temp 12°C
-  };
-
-  const increaseHour = () => {
-    setStartHour((prev) => (prev + 1) % 24);
-  };
-
-  const decreaseHour = () => {
-    setStartHour((prev) => (prev - 1 + 24) % 24);
-  };
-
-  const increaseMinute = () => {
-    setStartMinute((prev) => (prev + 15) % 60);
-  };
-
-  const decreaseMinute = () => {
-    setStartMinute((prev) => (prev - 15 + 60) % 60);
-  };
-
-  const increaseEndHour = () => {
-    setEndHour((prev) => (prev + 1) % 24);
-  };
-
-  const decreaseEndHour = () => {
-    setEndHour((prev) => (prev - 1 + 24) % 24);
-  };
-
-  const increaseEndMinute = () => {
-    setEndMinute((prev) => (prev + 15) % 60);
-  };
-
-  const decreaseEndMinute = () => {
-    setEndMinute((prev) => (prev - 15 + 60) % 60);
+  const handleSettingsChange = (newSettings: ThermostatData) => {
+    setCurrentSettings(newSettings);
   };
 
   const handleSubmitSchedule = async () => {
-    const scheduleData = {
-      temperature,
-      startTime: {
-        hour: startHour,
-        minute: startMinute,
-      },
-      endTime: {
-        hour: endHour,
-        minute: endMinute,
-      },
-    };
-
-    console.log("Submitting schedule:", scheduleData);
+    console.log("Submitting schedule:", currentSettings);
 
     try {
       // TODO: Replace with actual API call
       // const response = await fetch('/api/schedule', {
       //   method: 'POST',
       //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(scheduleData),
+      //   body: JSON.stringify(currentSettings),
       // });
 
       alert(
-        `Schedule submitted!\nTemperature: ${temperature}°C\nStart: ${startHour
+        `Schedule submitted!\nTemperature: ${
+          currentSettings.temperature
+        }°C\nStart: ${currentSettings.startTime.hour
           .toString()
-          .padStart(2, "0")}:${startMinute
+          .padStart(2, "0")}:${currentSettings.startTime.minute
           .toString()
-          .padStart(2, "0")}\nEnd: ${endHour
+          .padStart(2, "0")}\nEnd: ${currentSettings.endTime.hour
           .toString()
-          .padStart(2, "0")}:${endMinute.toString().padStart(2, "0")}`
+          .padStart(2, "0")}:${currentSettings.endTime.minute
+          .toString()
+          .padStart(2, "0")}`
       );
     } catch (error) {
       console.error("Error submitting schedule:", error);
@@ -133,35 +90,12 @@ export default function ThermostatContainer() {
         onLogin={handleLogin}
         onLogout={handleLogout}
       />
-      {/* Thermostat Controls */}
-      <div className="flex flex-col lg:flex-row gap-8 lg:gap-6">
-        <TemperatureCard
-          temperature={temperature}
-          onIncrease={increaseTemp}
-          onDecrease={decreaseTemp}
-        />
 
-        <StartTimeCard
-          hour={startHour}
-          minute={startMinute}
-          onIncreaseHour={increaseHour}
-          onDecreaseHour={decreaseHour}
-          onIncreaseMinute={increaseMinute}
-          onDecreaseMinute={decreaseMinute}
-        />
+      {/* Thermostat Settings */}
+      <ThermostatSettings onSettingsChange={handleSettingsChange} />
 
-        <EndTimeCard
-          hour={endHour}
-          minute={endMinute}
-          onIncreaseHour={increaseEndHour}
-          onDecreaseHour={decreaseEndHour}
-          onIncreaseMinute={increaseEndMinute}
-          onDecreaseMinute={decreaseEndMinute}
-        />
-      </div>
-
-      {/* Schedule History */}
-      <SchedulesCard />
+      {/* Schedule Display */}
+      <ScheduleDisplay />
     </div>
   );
 }
