@@ -3,24 +3,39 @@
 interface StartTimeCardProps {
   hour: number;
   minute: number;
+  date: Date;
   onIncreaseHour: () => void;
   onDecreaseHour: () => void;
   onIncreaseMinute: () => void;
   onDecreaseMinute: () => void;
+  onIncreaseDate: () => void;
+  onDecreaseDate: () => void;
 }
 
 export default function StartTimeCard({
   hour,
   minute,
+  date,
   onIncreaseHour,
   onDecreaseHour,
   onIncreaseMinute,
   onDecreaseMinute,
+  onIncreaseDate,
+  onDecreaseDate,
 }: StartTimeCardProps) {
   const formatTime = (hour: number, minute: number) => {
     return `${hour.toString().padStart(2, "0")}:${minute
       .toString()
       .padStart(2, "0")}`;
+  };
+
+  const formatDate = (date: Date) => {
+    const options: Intl.DateTimeFormatOptions = {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    };
+    return date.toLocaleDateString("en-US", options);
   };
 
   return (
@@ -33,6 +48,32 @@ export default function StartTimeCard({
 
         {/* Time Controls */}
         <div className="flex items-center space-x-4">
+          {/* Date Control */}
+          <div className="flex flex-col items-center space-y-1">
+            <span className="text-xs text-gray-600 dark:text-gray-300">
+              Date
+            </span>
+            <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg px-2 py-1">
+              <button
+                onClick={onDecreaseDate}
+                className="w-6 h-6 bg-red-500 hover:bg-red-600 text-white font-bold text-sm rounded transition-colors flex items-center justify-center"
+              >
+                -
+              </button>
+              <span className="text-sm font-semibold min-w-[120px] text-center">
+                {formatDate(date)}
+              </span>
+              <button
+                onClick={onIncreaseDate}
+                className="w-6 h-6 bg-green-500 hover:bg-green-600 text-white font-bold text-sm rounded transition-colors flex items-center justify-center"
+              >
+                +
+              </button>
+            </div>
+          </div>
+
+          <div className="text-2xl font-bold text-gray-400">•</div>
+
           {/* Hour Control */}
           <div className="flex flex-col items-center space-y-1">
             <span className="text-xs text-gray-600 dark:text-gray-300">

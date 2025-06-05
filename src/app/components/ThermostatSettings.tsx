@@ -10,10 +10,12 @@ export interface ThermostatData {
   startTime: {
     hour: number;
     minute: number;
+    date: Date;
   };
   endTime: {
     hour: number;
     minute: number;
+    date: Date;
   };
 }
 
@@ -24,28 +26,37 @@ interface ThermostatSettingsProps {
 export default function ThermostatSettings({
   onSettingsChange,
 }: ThermostatSettingsProps) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Reset time to midnight for consistency
+
   const [temperature, setTemperature] = useState(25);
   const [startHour, setStartHour] = useState(8);
   const [startMinute, setStartMinute] = useState(0);
+  const [startDate, setStartDate] = useState(new Date(today));
   const [endHour, setEndHour] = useState(18);
   const [endMinute, setEndMinute] = useState(0);
+  const [endDate, setEndDate] = useState(new Date(today));
 
   const updateParent = (
     newTemp?: number,
     newStartHour?: number,
     newStartMinute?: number,
+    newStartDate?: Date,
     newEndHour?: number,
-    newEndMinute?: number
+    newEndMinute?: number,
+    newEndDate?: Date
   ) => {
     const data: ThermostatData = {
       temperature: newTemp ?? temperature,
       startTime: {
         hour: newStartHour ?? startHour,
         minute: newStartMinute ?? startMinute,
+        date: newStartDate ?? startDate,
       },
       endTime: {
         hour: newEndHour ?? endHour,
         minute: newEndMinute ?? endMinute,
+        date: newEndDate ?? endDate,
       },
     };
     onSettingsChange(data);
@@ -87,28 +98,86 @@ export default function ThermostatSettings({
     updateParent(undefined, undefined, newMinute);
   };
 
+  const increaseStartDate = () => {
+    const newDate = new Date(startDate);
+    newDate.setDate(newDate.getDate() + 1);
+    setStartDate(newDate);
+    updateParent(undefined, undefined, undefined, newDate);
+  };
+
+  const decreaseStartDate = () => {
+    const newDate = new Date(startDate);
+    newDate.setDate(newDate.getDate() - 1);
+    setStartDate(newDate);
+    updateParent(undefined, undefined, undefined, newDate);
+  };
+
   const increaseEndHour = () => {
     const newEndHour = (endHour + 1) % 24;
     setEndHour(newEndHour);
-    updateParent(undefined, undefined, undefined, newEndHour);
+    updateParent(undefined, undefined, undefined, undefined, newEndHour);
   };
 
   const decreaseEndHour = () => {
     const newEndHour = (endHour - 1 + 24) % 24;
     setEndHour(newEndHour);
-    updateParent(undefined, undefined, undefined, newEndHour);
+    updateParent(undefined, undefined, undefined, undefined, newEndHour);
   };
 
   const increaseEndMinute = () => {
     const newEndMinute = (endMinute + 15) % 60;
     setEndMinute(newEndMinute);
-    updateParent(undefined, undefined, undefined, undefined, newEndMinute);
+    updateParent(
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      newEndMinute
+    );
   };
 
   const decreaseEndMinute = () => {
     const newEndMinute = (endMinute - 15 + 60) % 60;
     setEndMinute(newEndMinute);
-    updateParent(undefined, undefined, undefined, undefined, newEndMinute);
+    updateParent(
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      newEndMinute
+    );
+  };
+
+  const increaseEndDate = () => {
+    const newDate = new Date(endDate);
+    newDate.setDate(newDate.getDate() + 1);
+    setEndDate(newDate);
+    updateParent(
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      newDate
+    );
+  };
+
+  const decreaseEndDate = () => {
+    const newDate = new Date(endDate);
+    newDate.setDate(newDate.getDate() - 1);
+    setEndDate(newDate);
+    updateParent(
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      newDate
+    );
   };
 
   return (
@@ -124,19 +193,25 @@ export default function ThermostatSettings({
         <StartTimeCard
           hour={startHour}
           minute={startMinute}
+          date={startDate}
           onIncreaseHour={increaseHour}
           onDecreaseHour={decreaseHour}
           onIncreaseMinute={increaseMinute}
           onDecreaseMinute={decreaseMinute}
+          onIncreaseDate={increaseStartDate}
+          onDecreaseDate={decreaseStartDate}
         />
 
         <EndTimeCard
           hour={endHour}
           minute={endMinute}
+          date={endDate}
           onIncreaseHour={increaseEndHour}
           onDecreaseHour={decreaseEndHour}
           onIncreaseMinute={increaseEndMinute}
           onDecreaseMinute={decreaseEndMinute}
+          onIncreaseDate={increaseEndDate}
+          onDecreaseDate={decreaseEndDate}
         />
       </div>
     </div>
