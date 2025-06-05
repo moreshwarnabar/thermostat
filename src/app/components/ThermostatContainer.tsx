@@ -27,8 +27,8 @@ export default function ThermostatContainer() {
   // Current thermostat settings state
   const [currentSettings, setCurrentSettings] = useState<ThermostatData>({
     temperature: 25,
-    startTime: { hour: 8, minute: 0 },
-    endTime: { hour: 18, minute: 0 },
+    startTime: { hour: 8, minute: 0, date: new Date() },
+    endTime: { hour: 18, minute: 0, date: new Date() },
   });
 
   // Schedules state moved from SchedulesCard
@@ -127,7 +127,7 @@ export default function ThermostatContainer() {
           .padStart(2, "0")}:${currentSettings.endTime.minute
           .toString()
           .padStart(2, "0")}`,
-        date: new Date().toISOString().split("T")[0], // Today's date in YYYY-MM-DD format
+        date: currentSettings.startTime.date.toISOString().split("T")[0], // Use actual start date
         status: "upcoming" as const,
       };
 

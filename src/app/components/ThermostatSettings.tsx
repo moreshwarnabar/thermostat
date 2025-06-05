@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import TemperatureCard from "@/app/components/TemperatureCard";
-import StartTimeCard from "@/app/components/StartTimeCard";
-import EndTimeCard from "@/app/components/EndTimeCard";
+import TimeCard from "@/app/components/TimeCard";
 
 export interface ThermostatData {
   temperature: number;
@@ -277,41 +276,42 @@ export default function ThermostatSettings({
     <div className="space-y-6">
       {/* Thermostat Controls */}
       <div className="flex flex-col lg:flex-row gap-8 lg:gap-6">
-        <TemperatureCard
-          temperature={temperature}
-          onIncrease={increaseTemp}
-          onDecrease={decreaseTemp}
-        />
+        <div className="lg:w-2/5">
+          <TemperatureCard
+            temperature={temperature}
+            onIncrease={increaseTemp}
+            onDecrease={decreaseTemp}
+          />
+        </div>
 
-        <StartTimeCard
-          hour={startHour}
-          minute={startMinute}
-          date={startDate}
-          onIncreaseHour={increaseHour}
-          onDecreaseHour={decreaseHour}
-          onIncreaseMinute={increaseMinute}
-          onDecreaseMinute={decreaseMinute}
-          onIncreaseDate={increaseStartDate}
-          onDecreaseDate={decreaseStartDate}
-          isDateDecreaseDisabled={isStartDateDecreaseDisabled()}
-          isHourDecreaseDisabled={isStartHourDecreaseDisabled()}
-          isMinuteDecreaseDisabled={isStartMinuteDecreaseDisabled()}
-        />
-
-        <EndTimeCard
-          hour={endHour}
-          minute={endMinute}
-          date={endDate}
-          onIncreaseHour={increaseEndHour}
-          onDecreaseHour={decreaseEndHour}
-          onIncreaseMinute={increaseEndMinute}
-          onDecreaseMinute={decreaseEndMinute}
-          onIncreaseDate={increaseEndDate}
-          onDecreaseDate={decreaseEndDate}
-          isDateDecreaseDisabled={isEndDateDecreaseDisabled()}
-          isHourDecreaseDisabled={isEndHourDecreaseDisabled()}
-          isMinuteDecreaseDisabled={isEndMinuteDecreaseDisabled()}
-        />
+        <div className="lg:w-3/5">
+          <TimeCard
+            startHour={startHour}
+            startMinute={startMinute}
+            startDate={startDate}
+            onIncreaseStartHour={increaseHour}
+            onDecreaseStartHour={decreaseHour}
+            onIncreaseStartMinute={increaseMinute}
+            onDecreaseStartMinute={decreaseMinute}
+            onIncreaseStartDate={increaseStartDate}
+            onDecreaseStartDate={decreaseStartDate}
+            isStartDateDecreaseDisabled={isStartDateDecreaseDisabled()}
+            isStartHourDecreaseDisabled={isStartHourDecreaseDisabled()}
+            isStartMinuteDecreaseDisabled={isStartMinuteDecreaseDisabled()}
+            endHour={endHour}
+            endMinute={endMinute}
+            endDate={endDate}
+            onIncreaseEndHour={increaseEndHour}
+            onDecreaseEndHour={decreaseEndHour}
+            onIncreaseEndMinute={increaseEndMinute}
+            onDecreaseEndMinute={decreaseEndMinute}
+            onIncreaseEndDate={increaseEndDate}
+            onDecreaseEndDate={decreaseEndDate}
+            isEndDateDecreaseDisabled={isEndDateDecreaseDisabled()}
+            isEndHourDecreaseDisabled={isEndHourDecreaseDisabled()}
+            isEndMinuteDecreaseDisabled={isEndMinuteDecreaseDisabled()}
+          />
+        </div>
       </div>
     </div>
   );

@@ -12,7 +12,7 @@ export default function TemperatureCard({
   onDecrease,
 }: TemperatureCardProps) {
   return (
-    <div className="flex-1 flex flex-col justify-center bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+    <div className="h-full flex flex-col justify-center bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700">
       {/* Temperature Display and Controls */}
       <div className="flex flex-col items-center space-y-4">
         <div className="text-6xl font-bold text-blue-600 dark:text-blue-400">
