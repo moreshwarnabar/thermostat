@@ -179,7 +179,7 @@ export default function ThermostatContainer() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       {/* Header with Login Button */}
       <LoginHeader
         onSubmitSchedule={handleSubmitSchedule}
