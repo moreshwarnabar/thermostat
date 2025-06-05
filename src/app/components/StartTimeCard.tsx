@@ -48,8 +48,8 @@ export default function StartTimeCard({
     <div className="flex-1 flex flex-col justify-center bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700">
       {/* Time Display */}
       <div className="flex flex-col items-center space-y-4">
-        <div className="text-6xl font-bold text-green-600 dark:text-green-400">
-          {formatTime(hour, minute)}
+        <div className="text-5xl font-bold text-green-600 dark:text-green-400">
+          {formatDate(date)} • {formatTime(hour, minute)}
         </div>
 
         {/* Time Controls */}
@@ -83,8 +83,6 @@ export default function StartTimeCard({
             </div>
           </div>
 
-          <div className="text-2xl font-bold text-gray-400">•</div>
-
           {/* Hour Control */}
           <div className="flex flex-col items-center space-y-1">
             <span className="text-xs text-gray-600 dark:text-gray-300">
@@ -113,8 +111,6 @@ export default function StartTimeCard({
               </button>
             </div>
           </div>
-
-          <div className="text-2xl font-bold text-gray-400">:</div>
 
           {/* Minute Control */}
           <div className="flex flex-col items-center space-y-1">
