@@ -37,6 +37,51 @@ export default function ThermostatSettings({
   const [endMinute, setEndMinute] = useState(0);
   const [endDate, setEndDate] = useState(new Date(today));
 
+  // Helper functions to check if decrease buttons should be disabled
+  const isStartDateDecreaseDisabled = () => {
+    const newDate = new Date(startDate);
+    newDate.setDate(newDate.getDate() - 1);
+    const testDate = new Date(newDate);
+    testDate.setHours(startHour, startMinute, 0, 0);
+    return testDate <= new Date();
+  };
+
+  const isStartHourDecreaseDisabled = () => {
+    const newHour = (startHour - 1 + 24) % 24;
+    const testDate = new Date(startDate);
+    testDate.setHours(newHour, startMinute, 0, 0);
+    return testDate <= new Date();
+  };
+
+  const isStartMinuteDecreaseDisabled = () => {
+    const newMinute = (startMinute - 15 + 60) % 60;
+    const testDate = new Date(startDate);
+    testDate.setHours(startHour, newMinute, 0, 0);
+    return testDate <= new Date();
+  };
+
+  const isEndDateDecreaseDisabled = () => {
+    const newDate = new Date(endDate);
+    newDate.setDate(newDate.getDate() - 1);
+    const testDate = new Date(newDate);
+    testDate.setHours(endHour, endMinute, 0, 0);
+    return testDate <= new Date();
+  };
+
+  const isEndHourDecreaseDisabled = () => {
+    const newHour = (endHour - 1 + 24) % 24;
+    const testDate = new Date(endDate);
+    testDate.setHours(newHour, endMinute, 0, 0);
+    return testDate <= new Date();
+  };
+
+  const isEndMinuteDecreaseDisabled = () => {
+    const newMinute = (endMinute - 15 + 60) % 60;
+    const testDate = new Date(endDate);
+    testDate.setHours(endHour, newMinute, 0, 0);
+    return testDate <= new Date();
+  };
+
   const updateParent = (
     newTemp?: number,
     newStartHour?: number,
@@ -82,6 +127,14 @@ export default function ThermostatSettings({
 
   const decreaseHour = () => {
     const newHour = (startHour - 1 + 24) % 24;
+    const testDate = new Date(startDate);
+    testDate.setHours(newHour, startMinute, 0, 0);
+
+    // Don't allow setting a time in the past
+    if (testDate <= new Date()) {
+      return;
+    }
+
     setStartHour(newHour);
     updateParent(undefined, newHour);
   };
@@ -94,6 +147,14 @@ export default function ThermostatSettings({
 
   const decreaseMinute = () => {
     const newMinute = (startMinute - 15 + 60) % 60;
+    const testDate = new Date(startDate);
+    testDate.setHours(startHour, newMinute, 0, 0);
+
+    // Don't allow setting a time in the past
+    if (testDate <= new Date()) {
+      return;
+    }
+
     setStartMinute(newMinute);
     updateParent(undefined, undefined, newMinute);
   };
@@ -108,6 +169,14 @@ export default function ThermostatSettings({
   const decreaseStartDate = () => {
     const newDate = new Date(startDate);
     newDate.setDate(newDate.getDate() - 1);
+    const testDate = new Date(newDate);
+    testDate.setHours(startHour, startMinute, 0, 0);
+
+    // Don't allow setting a date/time in the past
+    if (testDate <= new Date()) {
+      return;
+    }
+
     setStartDate(newDate);
     updateParent(undefined, undefined, undefined, newDate);
   };
@@ -120,6 +189,14 @@ export default function ThermostatSettings({
 
   const decreaseEndHour = () => {
     const newEndHour = (endHour - 1 + 24) % 24;
+    const testDate = new Date(endDate);
+    testDate.setHours(newEndHour, endMinute, 0, 0);
+
+    // Don't allow setting a time in the past
+    if (testDate <= new Date()) {
+      return;
+    }
+
     setEndHour(newEndHour);
     updateParent(undefined, undefined, undefined, undefined, newEndHour);
   };
@@ -139,6 +216,14 @@ export default function ThermostatSettings({
 
   const decreaseEndMinute = () => {
     const newEndMinute = (endMinute - 15 + 60) % 60;
+    const testDate = new Date(endDate);
+    testDate.setHours(endHour, newEndMinute, 0, 0);
+
+    // Don't allow setting a time in the past
+    if (testDate <= new Date()) {
+      return;
+    }
+
     setEndMinute(newEndMinute);
     updateParent(
       undefined,
@@ -168,6 +253,14 @@ export default function ThermostatSettings({
   const decreaseEndDate = () => {
     const newDate = new Date(endDate);
     newDate.setDate(newDate.getDate() - 1);
+    const testDate = new Date(newDate);
+    testDate.setHours(endHour, endMinute, 0, 0);
+
+    // Don't allow setting a date/time in the past
+    if (testDate <= new Date()) {
+      return;
+    }
+
     setEndDate(newDate);
     updateParent(
       undefined,
@@ -200,6 +293,9 @@ export default function ThermostatSettings({
           onDecreaseMinute={decreaseMinute}
           onIncreaseDate={increaseStartDate}
           onDecreaseDate={decreaseStartDate}
+          isDateDecreaseDisabled={isStartDateDecreaseDisabled()}
+          isHourDecreaseDisabled={isStartHourDecreaseDisabled()}
+          isMinuteDecreaseDisabled={isStartMinuteDecreaseDisabled()}
         />
 
         <EndTimeCard
@@ -212,6 +308,9 @@ export default function ThermostatSettings({
           onDecreaseMinute={decreaseEndMinute}
           onIncreaseDate={increaseEndDate}
           onDecreaseDate={decreaseEndDate}
+          isDateDecreaseDisabled={isEndDateDecreaseDisabled()}
+          isHourDecreaseDisabled={isEndHourDecreaseDisabled()}
+          isMinuteDecreaseDisabled={isEndMinuteDecreaseDisabled()}
         />
       </div>
     </div>

@@ -10,6 +10,9 @@ interface EndTimeCardProps {
   onDecreaseMinute: () => void;
   onIncreaseDate: () => void;
   onDecreaseDate: () => void;
+  isDateDecreaseDisabled: boolean;
+  isHourDecreaseDisabled: boolean;
+  isMinuteDecreaseDisabled: boolean;
 }
 
 export default function EndTimeCard({
@@ -22,6 +25,9 @@ export default function EndTimeCard({
   onDecreaseMinute,
   onIncreaseDate,
   onDecreaseDate,
+  isDateDecreaseDisabled,
+  isHourDecreaseDisabled,
+  isMinuteDecreaseDisabled,
 }: EndTimeCardProps) {
   const formatTime = (hour: number, minute: number) => {
     return `${hour.toString().padStart(2, "0")}:${minute
@@ -56,7 +62,12 @@ export default function EndTimeCard({
             <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg px-2 py-1">
               <button
                 onClick={onDecreaseDate}
-                className="w-6 h-6 bg-red-500 hover:bg-red-600 text-white font-bold text-sm rounded transition-colors flex items-center justify-center"
+                disabled={isDateDecreaseDisabled}
+                className={`w-6 h-6 ${
+                  isDateDecreaseDisabled
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-red-500 hover:bg-red-600"
+                } text-white font-bold text-sm rounded transition-colors flex items-center justify-center`}
               >
                 -
               </button>
@@ -82,7 +93,12 @@ export default function EndTimeCard({
             <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg px-2 py-1">
               <button
                 onClick={onDecreaseHour}
-                className="w-6 h-6 bg-red-500 hover:bg-red-600 text-white font-bold text-sm rounded transition-colors flex items-center justify-center"
+                disabled={isHourDecreaseDisabled}
+                className={`w-6 h-6 ${
+                  isHourDecreaseDisabled
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-red-500 hover:bg-red-600"
+                } text-white font-bold text-sm rounded transition-colors flex items-center justify-center`}
               >
                 -
               </button>
@@ -108,7 +124,12 @@ export default function EndTimeCard({
             <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg px-2 py-1">
               <button
                 onClick={onDecreaseMinute}
-                className="w-6 h-6 bg-red-500 hover:bg-red-600 text-white font-bold text-sm rounded transition-colors flex items-center justify-center"
+                disabled={isMinuteDecreaseDisabled}
+                className={`w-6 h-6 ${
+                  isMinuteDecreaseDisabled
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-red-500 hover:bg-red-600"
+                } text-white font-bold text-sm rounded transition-colors flex items-center justify-center`}
               >
                 -
               </button>
