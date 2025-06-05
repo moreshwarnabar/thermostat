@@ -6,7 +6,6 @@ interface Schedule {
   startTime: string;
   endTime: string;
   date: string;
-  status: "active" | "completed" | "upcoming";
 }
 
 type FilterStatus = "active" | "completed" | "upcoming" | null;
@@ -22,8 +21,40 @@ const SchedulesCard: React.FC<SchedulesCardProps> = ({
   filterStatus,
   onFilterChange,
 }) => {
+  // Function to determine schedule status based on current time
+  const getScheduleStatus = (
+    schedule: Schedule
+  ): "active" | "completed" | "upcoming" => {
+    const now = new Date();
+    const scheduleDate = new Date(schedule.date);
+
+    // Parse start and end times
+    const [startHour, startMinute] = schedule.startTime.split(":").map(Number);
+    const [endHour, endMinute] = schedule.endTime.split(":").map(Number);
+
+    const startDateTime = new Date(scheduleDate);
+    startDateTime.setHours(startHour, startMinute, 0, 0);
+
+    const endDateTime = new Date(scheduleDate);
+    endDateTime.setHours(endHour, endMinute, 0, 0);
+
+    if (now < startDateTime) {
+      return "upcoming";
+    } else if (now > endDateTime) {
+      return "completed";
+    } else {
+      return "active";
+    }
+  };
+
+  // Add status to schedules dynamically
+  const schedulesWithStatus = schedules.map((schedule) => ({
+    ...schedule,
+    status: getScheduleStatus(schedule),
+  }));
+
   // Filter schedules based on selected status
-  const filteredSchedules = schedules.filter(
+  const filteredSchedules = schedulesWithStatus.filter(
     (schedule) => filterStatus === null || schedule.status === filterStatus
   );
 
@@ -59,7 +90,8 @@ const SchedulesCard: React.FC<SchedulesCardProps> = ({
 
   const getStatusCount = (status: FilterStatus) => {
     if (status === null) return schedules.length;
-    return schedules.filter((schedule) => schedule.status === status).length;
+    return schedulesWithStatus.filter((schedule) => schedule.status === status)
+      .length;
   };
 
   const handleFilterClick = (status: FilterStatus) => {

@@ -14,7 +14,6 @@ interface Schedule {
   startTime: string;
   endTime: string;
   date: string;
-  status: "active" | "completed" | "upcoming";
 }
 
 type FilterStatus = "active" | "completed" | "upcoming" | null;
@@ -39,7 +38,6 @@ export default function ThermostatContainer() {
       startTime: "08:00",
       endTime: "18:00",
       date: "2024-01-15",
-      status: "active",
     },
     {
       id: 2,
@@ -47,7 +45,6 @@ export default function ThermostatContainer() {
       startTime: "09:00",
       endTime: "17:00",
       date: "2024-01-16",
-      status: "upcoming",
     },
     {
       id: 3,
@@ -55,7 +52,6 @@ export default function ThermostatContainer() {
       startTime: "07:30",
       endTime: "19:00",
       date: "2024-01-14",
-      status: "completed",
     },
     {
       id: 4,
@@ -63,7 +59,6 @@ export default function ThermostatContainer() {
       startTime: "08:30",
       endTime: "16:30",
       date: "2024-01-17",
-      status: "upcoming",
     },
     {
       id: 5,
@@ -71,7 +66,6 @@ export default function ThermostatContainer() {
       startTime: "09:15",
       endTime: "18:45",
       date: "2024-01-13",
-      status: "completed",
     },
   ]);
 
@@ -128,7 +122,6 @@ export default function ThermostatContainer() {
           .toString()
           .padStart(2, "0")}`,
         date: currentSettings.startTime.date.toISOString().split("T")[0], // Use actual start date
-        status: "upcoming" as const,
       };
 
       // Add the new schedule to the state
