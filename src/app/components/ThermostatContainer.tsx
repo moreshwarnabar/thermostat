@@ -5,7 +5,19 @@ import LoginHeader from "./LoginHeader";
 import ThermostatSettings, {
   ThermostatData,
 } from "@/app/components/ThermostatSettings";
-import ScheduleDisplay from "@/app/components/ScheduleDisplay";
+import SchedulesCard from "@/app/components/SchedulesCard";
+
+// Move Schedule interface and types from SchedulesCard
+interface Schedule {
+  id: number;
+  temperature: number;
+  startTime: string;
+  endTime: string;
+  date: string;
+  status: "active" | "completed" | "upcoming";
+}
+
+type FilterStatus = "active" | "completed" | "upcoming" | null;
 
 export default function ThermostatContainer() {
   // Authentication state
@@ -18,6 +30,53 @@ export default function ThermostatContainer() {
     startTime: { hour: 8, minute: 0 },
     endTime: { hour: 18, minute: 0 },
   });
+
+  // Schedules state moved from SchedulesCard
+  const [schedules, setSchedules] = useState<Schedule[]>([
+    {
+      id: 1,
+      temperature: 22,
+      startTime: "08:00",
+      endTime: "18:00",
+      date: "2024-01-15",
+      status: "active",
+    },
+    {
+      id: 2,
+      temperature: 25,
+      startTime: "09:00",
+      endTime: "17:00",
+      date: "2024-01-16",
+      status: "upcoming",
+    },
+    {
+      id: 3,
+      temperature: 20,
+      startTime: "07:30",
+      endTime: "19:00",
+      date: "2024-01-14",
+      status: "completed",
+    },
+    {
+      id: 4,
+      temperature: 24,
+      startTime: "08:30",
+      endTime: "16:30",
+      date: "2024-01-17",
+      status: "upcoming",
+    },
+    {
+      id: 5,
+      temperature: 21,
+      startTime: "09:15",
+      endTime: "18:45",
+      date: "2024-01-13",
+      status: "completed",
+    },
+  ]);
+
+  // Filter state moved from SchedulesCard
+  const [filterStatus, setFilterStatus] = useState<FilterStatus>(null);
 
   useEffect(() => {
     checkAuthStatus();
@@ -54,6 +113,27 @@ export default function ThermostatContainer() {
     console.log("Submitting schedule:", currentSettings);
 
     try {
+      // Create new schedule from current settings
+      const newSchedule: Schedule = {
+        id: Math.max(...schedules.map((s) => s.id), 0) + 1, // Generate unique ID
+        temperature: currentSettings.temperature,
+        startTime: `${currentSettings.startTime.hour
+          .toString()
+          .padStart(2, "0")}:${currentSettings.startTime.minute
+          .toString()
+          .padStart(2, "0")}`,
+        endTime: `${currentSettings.endTime.hour
+          .toString()
+          .padStart(2, "0")}:${currentSettings.endTime.minute
+          .toString()
+          .padStart(2, "0")}`,
+        date: new Date().toISOString().split("T")[0], // Today's date in YYYY-MM-DD format
+        status: "upcoming" as const,
+      };
+
+      // Add the new schedule to the state
+      setSchedules((prevSchedules) => [...prevSchedules, newSchedule]);
+
       // TODO: Replace with actual API call
       // const response = await fetch('/api/schedule', {
       //   method: 'POST',
@@ -95,7 +175,11 @@ export default function ThermostatContainer() {
       <ThermostatSettings onSettingsChange={handleSettingsChange} />
 
       {/* Schedule Display */}
-      <ScheduleDisplay />
+      <SchedulesCard
+        schedules={schedules}
+        filterStatus={filterStatus}
+        onFilterChange={setFilterStatus}
+      />
     </div>
   );
 }
