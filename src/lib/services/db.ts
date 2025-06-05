@@ -1,17 +1,19 @@
-import { Credentials } from "@/lib/types";
+import { Credentials } from "@/lib/types/types";
 import supabaseAdmin from "@/lib/services/supabaseAdmin";
 import { v5 as uuidv5 } from "uuid";
 
 const getAuthToken = async () => {
-  const { data, error } = await supabaseAdmin
+  const { data: user_tokens, error } = await supabaseAdmin
     .from("user_tokens")
-    .select("*")
+    .select("access_token")
     .single();
   if (error) {
     console.error("Error getting auth token", error);
     return null;
   }
-  return data.token;
+
+  console.log("User tokens", user_tokens);
+  return user_tokens.access_token;
 };
 
 const storeAuthToken = async (tokens: Credentials) => {

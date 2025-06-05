@@ -1,11 +1,15 @@
-import { AuthHeaders, ExecuteCommandBody, ThermostatEvent } from "@/lib/types";
+import {
+  AuthHeaders,
+  ExecuteCommandBody,
+  ThermostatEvent,
+} from "@/lib/types/types";
 import { validateEvent } from "@/lib/validators/thermostat";
 import { getAuthToken } from "@/lib/services/db";
 
 const TARGET_TEMP = 25;
 const THERMO_BASE_URL = process.env.THERMO_BASE_URL;
-const PROJECT_ID = process.env.PROJECT_ID;
-const DEVICE_ID = process.env.DEVICE_ID;
+const THERMO_PROJECT_ID = process.env.THERMO_PROJECT_ID;
+const THERMO_DEVICE_ID = process.env.THERMO_DEVICE_ID;
 
 const updateThermostat = async (event: ThermostatEvent) => {
   console.log("Validating event", event);
@@ -58,7 +62,7 @@ const updateThermostat = async (event: ThermostatEvent) => {
 };
 
 const setEcoOff = async (creds: string) => {
-  const url = `${THERMO_BASE_URL}/${PROJECT_ID}/devices/${DEVICE_ID}:executeCommand`;
+  const url = `${THERMO_BASE_URL}/${THERMO_PROJECT_ID}/devices/${THERMO_DEVICE_ID}:executeCommand`;
   const headers = {
     Authorization: `Bearer ${creds}`,
     "Content-Type": "application/json",
@@ -75,7 +79,7 @@ const setEcoOff = async (creds: string) => {
 };
 
 const setMode = async (creds: string, mode: string) => {
-  const url = `${THERMO_BASE_URL}/${PROJECT_ID}/devices/${DEVICE_ID}:executeCommand`;
+  const url = `${THERMO_BASE_URL}/${THERMO_PROJECT_ID}/devices/${THERMO_DEVICE_ID}:executeCommand`;
   const headers = {
     Authorization: `Bearer ${creds}`,
     "Content-Type": "application/json",
@@ -92,7 +96,7 @@ const setMode = async (creds: string, mode: string) => {
 };
 
 const setTemp = async (creds: string) => {
-  const url = `${THERMO_BASE_URL}/${PROJECT_ID}/devices/${DEVICE_ID}:executeCommand`;
+  const url = `${THERMO_BASE_URL}/${THERMO_PROJECT_ID}/devices/${THERMO_DEVICE_ID}:executeCommand`;
   const headers = {
     Authorization: `Bearer ${creds}`,
     "Content-Type": "application/json",

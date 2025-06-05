@@ -1,4 +1,4 @@
-import { ThermostatEvent } from "@/lib/types";
+import { ThermostatEvent } from "@/lib/types/types";
 
 interface DeviceInfo {
   mode: string;
