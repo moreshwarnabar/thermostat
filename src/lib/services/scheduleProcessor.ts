@@ -1,7 +1,8 @@
-import { getAuthToken } from "@/lib/services/auth";
-import { setMode, setCustomTemp } from "@/lib/services/updateThermostat";
 import supabaseAdmin from "@/lib/services/supabaseAdmin";
 import { ScheduleTable } from "@/lib/services/schedules";
+import { getAuthToken } from "@/lib/services/auth";
+import { setMode, setCustomTemp } from "@/lib/services/updateThermostat";
+import { logger } from "@/lib/services/logger";
 
 interface ScheduleProcessorResult {
   success: boolean;
@@ -19,6 +20,8 @@ const fetchSchedulesToStart = async (
   data: ScheduleTable[] | null;
   error: { message: string } | null;
 }> => {
+  const scheduleLogger = logger.scheduleProcessing("fetch_schedules");
+
   try {
     // Round down to the nearest 15-minute mark
     const now = new Date(currentTime);
@@ -28,9 +31,10 @@ const fetchSchedulesToStart = async (
     const scheduleTime = new Date(now);
     scheduleTime.setMinutes(roundedMinutes, 0, 0); // Set to exact 15-minute mark
 
-    console.log(
-      `Looking for schedules that start at: ${scheduleTime.toISOString()}`
-    );
+    scheduleLogger.info("Looking for schedules that start at specific time", {
+      scheduleTime: scheduleTime.toISOString(),
+      currentTime,
+    });
 
     const { data, error } = await supabaseAdmin
       .from("schedules")
@@ -39,13 +43,21 @@ const fetchSchedulesToStart = async (
       .order("start_time", { ascending: true });
 
     if (error) {
-      console.error("Error fetching schedules to start:", error);
+      scheduleLogger.error("Error fetching schedules to start", {
+        error: error.message,
+      });
       return { data: null, error: { message: error.message } };
     }
 
+    scheduleLogger.info("Successfully fetched schedules", {
+      scheduleCount: data?.length || 0,
+    });
     return { data: data || [], error: null };
   } catch (error) {
-    console.error("Unexpected error fetching schedules to start:", error);
+    scheduleLogger.error("Unexpected error fetching schedules to start", {
+      error: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return {
       data: null,
       error: {
@@ -61,11 +73,15 @@ const fetchSchedulesToStart = async (
  * @returns Promise containing processing results
  */
 export const processSchedules = async (): Promise<ScheduleProcessorResult> => {
+  const processLogger = logger.scheduleProcessing("process_schedules");
   const errors: string[] = [];
   let processedSchedules = 0;
 
   try {
     const now = new Date();
+    processLogger.info("Starting schedule processing", {
+      timestamp: now.toISOString(),
+    });
 
     // Fetch schedules that should start right now (within current minute)
     const { data: schedules, error } = await fetchSchedulesToStart(
@@ -73,9 +89,13 @@ export const processSchedules = async (): Promise<ScheduleProcessorResult> => {
     );
 
     if (error) {
-      errors.push(
-        `Failed to fetch schedules: ${error.message || "Unknown error"}`
-      );
+      const errorMessage = `Failed to fetch schedules: ${
+        error.message || "Unknown error"
+      }`;
+      processLogger.error("Failed to fetch schedules", {
+        error: error.message,
+      });
+      errors.push(errorMessage);
       return {
         success: false,
         message: "Failed to fetch schedules",
@@ -85,6 +105,7 @@ export const processSchedules = async (): Promise<ScheduleProcessorResult> => {
     }
 
     if (!schedules || schedules.length === 0) {
+      processLogger.info("No schedules to process");
       return {
         success: true,
         message: "No schedules to process",
@@ -93,38 +114,65 @@ export const processSchedules = async (): Promise<ScheduleProcessorResult> => {
       };
     }
 
-    console.log(`Found ${schedules.length} schedules to process`);
+    processLogger.info("Found schedules to process", {
+      scheduleCount: schedules.length,
+    });
 
     // Process each schedule
     for (const schedule of schedules) {
+      const scheduleSpecificLogger = processLogger.setContext({
+        scheduleId: schedule.id.toString(),
+      });
+
       try {
+        scheduleSpecificLogger.info("Processing individual schedule", {
+          temperature: schedule.temperature,
+          startTime: schedule.start_time,
+        });
+
         const success = await triggerThermostatUpdate(schedule);
         if (success) {
           processedSchedules++;
-          console.log(`Successfully processed schedule ${schedule.id}`);
+          scheduleSpecificLogger.info("Successfully processed schedule");
         } else {
-          errors.push(`Failed to process schedule ${schedule.id}`);
+          const errorMessage = `Failed to process schedule ${schedule.id}`;
+          scheduleSpecificLogger.error("Failed to process schedule");
+          errors.push(errorMessage);
         }
       } catch (error) {
         const errorMessage = `Error processing schedule ${schedule.id}: ${
           error instanceof Error ? error.message : "Unknown error"
         }`;
-        console.error(errorMessage);
+        scheduleSpecificLogger.error("Error processing schedule", {
+          error: error instanceof Error ? error.message : "Unknown error",
+          stack: error instanceof Error ? error.stack : undefined,
+        });
         errors.push(errorMessage);
       }
     }
 
-    return {
+    const result = {
       success: errors.length === 0,
       message: `Processed ${processedSchedules} schedules`,
       processedSchedules,
       errors,
     };
+
+    processLogger.info("Schedule processing completed", {
+      success: result.success,
+      processedCount: processedSchedules,
+      errorCount: errors.length,
+    });
+
+    return result;
   } catch (error) {
     const errorMessage = `Unexpected error in processSchedules: ${
       error instanceof Error ? error.message : "Unknown error"
     }`;
-    console.error(errorMessage);
+    processLogger.error("Unexpected error in processSchedules", {
+      error: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     errors.push(errorMessage);
 
     return {
@@ -144,14 +192,22 @@ export const processSchedules = async (): Promise<ScheduleProcessorResult> => {
 const triggerThermostatUpdate = async (
   schedule: ScheduleTable
 ): Promise<boolean> => {
+  const thermoLogger = logger
+    .scheduleProcessing(schedule.id.toString())
+    .thermostatOperation("trigger_update", {
+      scheduleId: schedule.id.toString(),
+      targetTemperature: schedule.temperature,
+    });
+
   try {
-    console.log(
-      `Processing schedule ${schedule.id} with temperature ${schedule.temperature}°C`
-    );
+    thermoLogger.info("Processing schedule with temperature", {
+      temperature: schedule.temperature,
+      unit: "°C",
+    });
 
     const creds = await getAuthToken();
     if (!creds) {
-      console.error("No credentials found");
+      thermoLogger.error("No credentials found");
       return false;
     }
 
@@ -161,47 +217,59 @@ const triggerThermostatUpdate = async (
         let success = true;
 
         // Set thermostat to COOL mode
-        console.log("Setting thermostat to COOL mode");
+        thermoLogger.info("Setting thermostat to COOL mode", {
+          retryAttempt: retryCount + 1,
+        });
         const modeSuccess = await setMode(creds, "COOL");
         if (!modeSuccess) {
           success = false;
+          thermoLogger.warn("Failed to set thermostat to COOL mode");
         }
 
         // Set the scheduled temperature
-        console.log(`Setting temperature to ${schedule.temperature}°C`);
+        thermoLogger.info("Setting temperature", {
+          temperature: schedule.temperature,
+          retryAttempt: retryCount + 1,
+        });
         const tempSuccess = await setCustomTemp(creds, schedule.temperature);
         if (!tempSuccess) {
           success = false;
+          thermoLogger.warn("Failed to set temperature");
         }
 
         if (success) {
-          console.log(
-            `Successfully updated thermostat for schedule ${schedule.id}`
-          );
+          thermoLogger.info("Successfully updated thermostat for schedule");
           return true;
         }
 
         retryCount++;
-        await new Promise((resolve) => setTimeout(resolve, 60000 * retryCount));
+        const waitTime = 60000 * retryCount;
+        thermoLogger.warn("Retry attempt failed, waiting before next attempt", {
+          retryCount,
+          waitTimeMs: waitTime,
+        });
+        await new Promise((resolve) => setTimeout(resolve, waitTime));
       } catch (error) {
-        console.error(
-          `Error in retry ${retryCount} for schedule ${schedule.id}:`,
-          error
-        );
+        thermoLogger.error("Error in retry attempt", {
+          retryCount,
+          error: error instanceof Error ? error.message : "Unknown error",
+          stack: error instanceof Error ? error.stack : undefined,
+        });
         retryCount++;
-        await new Promise((resolve) => setTimeout(resolve, 60000 * retryCount));
+        const waitTime = 60000 * retryCount;
+        await new Promise((resolve) => setTimeout(resolve, waitTime));
       }
     }
 
-    console.error(
-      `Failed to update thermostat for schedule ${schedule.id} after 3 retries`
-    );
+    thermoLogger.error("Failed to update thermostat after all retry attempts", {
+      maxRetries: 3,
+    });
     return false;
   } catch (error) {
-    console.error(
-      `Error triggering thermostat update for schedule ${schedule.id}:`,
-      error
-    );
+    thermoLogger.error("Error triggering thermostat update", {
+      error: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return false;
   }
 };
