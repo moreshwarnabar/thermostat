@@ -89,7 +89,7 @@ export default function ThermostatContainer() {
           hour12: false,
         }
       ),
-      date: new Date(schedule.start_time as string).toISOString().split("T")[0],
+      date: (schedule.start_time as string).split("T")[0],
     };
   };
 
