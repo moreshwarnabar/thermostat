@@ -278,6 +278,6 @@ const transformSchedule = (schedule: ScheduleTable): Schedule => {
       minute: "2-digit",
       hour12: false,
     }),
-    date: new Date(schedule.created_at as string).toISOString().split("T")[0],
+    date: new Date(schedule.start_time as string).toISOString().split("T")[0],
   };
 };

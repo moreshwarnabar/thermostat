@@ -78,7 +78,17 @@ export default function ThermostatContainer() {
   };
 
   const handleSettingsChange = (newSettings: ThermostatData) => {
-    setCurrentSettings(newSettings);
+    setCurrentSettings({
+      ...newSettings,
+      startTime: {
+        ...newSettings.startTime,
+        date: new Date(newSettings.startTime.date),
+      },
+      endTime: {
+        ...newSettings.endTime,
+        date: new Date(newSettings.endTime.date),
+      },
+    });
   };
 
   const handleSubmitSchedule = async () => {
