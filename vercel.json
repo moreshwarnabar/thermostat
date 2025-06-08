@@ -3,6 +3,10 @@
     {
       "path": "/api/auth/refresh-all",
       "schedule": "*/55 * * * *"
+    },
+    {
+      "path": "/api/schedules/trigger",
+      "schedule": "*/15 * * * *"
     }
   ]
 }
