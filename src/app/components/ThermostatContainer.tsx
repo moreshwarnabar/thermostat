@@ -6,28 +6,19 @@ import ThermostatSettings, {
   ThermostatData,
 } from "@/app/components/ThermostatSettings";
 import SchedulesCard from "@/app/components/SchedulesCard";
-
-// Move Schedule interface and types from SchedulesCard
-interface Schedule {
-  id: number;
-  temperature: number;
-  startTime: string;
-  endTime: string;
-  date: string;
-}
+import { fetchSchedulesByUserId } from "@/lib/services/schedules";
+import { Schedule } from "@/lib/types/types";
 
 type FilterStatus = "active" | "completed" | "upcoming" | null;
 
 export default function ThermostatContainer() {
-  // Authentication state
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
 
-  // Current thermostat settings state
   const [currentSettings, setCurrentSettings] = useState<ThermostatData>(() => {
     const now = new Date();
 
-    // Round to next 15-minute interval
     const currentMinutes = now.getMinutes();
     const roundedMinutes = Math.ceil(currentMinutes / 15) * 15;
 
@@ -38,7 +29,7 @@ export default function ThermostatContainer() {
       startTime.setMinutes(roundedMinutes, 0, 0);
     }
 
-    const endTime = new Date(startTime.getTime() + 3 * 60 * 60 * 1000); // Add 3 hours
+    const endTime = new Date(startTime.getTime() + 3 * 60 * 60 * 1000);
 
     return {
       temperature: 25,
@@ -55,72 +46,35 @@ export default function ThermostatContainer() {
     };
   });
 
-  // Schedules state moved from SchedulesCard
-  const [schedules, setSchedules] = useState<Schedule[]>([
-    {
-      id: 1,
-      temperature: 22,
-      startTime: "08:00",
-      endTime: "18:00",
-      date: "2024-01-15",
-    },
-    {
-      id: 2,
-      temperature: 25,
-      startTime: "09:00",
-      endTime: "17:00",
-      date: "2024-01-16",
-    },
-    {
-      id: 3,
-      temperature: 20,
-      startTime: "07:30",
-      endTime: "19:00",
-      date: "2024-01-14",
-    },
-    {
-      id: 4,
-      temperature: 24,
-      startTime: "08:30",
-      endTime: "16:30",
-      date: "2024-01-17",
-    },
-    {
-      id: 5,
-      temperature: 21,
-      startTime: "09:15",
-      endTime: "18:45",
-      date: "2024-01-13",
-    },
-  ]);
-
-  // Filter state moved from SchedulesCard
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [filterStatus, setFilterStatus] = useState<FilterStatus>(null);
-
-  useEffect(() => {
-    checkAuthStatus();
-  }, []);
 
   const checkAuthStatus = async () => {
     try {
       const response = await fetch("/api/auth/status");
+
+      if (response.status === 401) {
+        setIsAuthenticated(false);
+        return;
+      }
+
       const data = await response.json();
       setIsAuthenticated(data.authenticated);
+      setUserId(data.user_id);
     } catch (error) {
       console.error("Error checking auth status:", error);
       setIsAuthenticated(false);
+      setUserId(null);
     } finally {
       setIsAuthLoading(false);
     }
   };
 
   const handleLogin = () => {
-    // Redirect to the login API route which handles the Google OAuth flow
     window.location.href = "/api/auth/login";
   };
 
   const handleLogout = () => {
-    // Redirect to logout API route
     window.location.href = "/api/auth/logout";
   };
 
@@ -132,7 +86,6 @@ export default function ThermostatContainer() {
     console.log("Submitting schedule:", currentSettings);
 
     try {
-      // Create new schedule from current settings
       const newSchedule: Schedule = {
         id: Math.max(...schedules.map((s) => s.id), 0) + 1, // Generate unique ID
         temperature: currentSettings.temperature,
@@ -177,6 +130,21 @@ export default function ThermostatContainer() {
       alert("Failed to submit schedule. Please try again.");
     }
   };
+
+  useEffect(() => {
+    checkAuthStatus();
+  }, []);
+
+  useEffect(() => {
+    const fetchSchedules = async () => {
+      const response = await fetchSchedulesByUserId(userId as string);
+      setSchedules(response.data || []);
+    };
+
+    if (isAuthenticated && userId) {
+      fetchSchedules();
+    }
+  }, [isAuthenticated, userId]);
 
   return (
     <div className="space-y-4">

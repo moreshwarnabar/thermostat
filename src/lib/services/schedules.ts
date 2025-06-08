@@ -1,8 +1,9 @@
 import supabaseAdmin from "@/lib/services/supabaseAdmin";
 import { Tables } from "@/lib/types/supabase";
+import { Schedule } from "../types/types";
 
 // Type alias for the Schedule row from Supabase
-export type Schedule = Tables<"schedules">;
+export type ScheduleTable = Tables<"schedules">;
 
 // Interface for error responses
 interface ScheduleError {
@@ -92,7 +93,7 @@ export const fetchSchedulesByUserId = async (
     }
 
     return {
-      data: data || [],
+      data: (data || []).map(transformSchedule),
       error: null,
     };
   } catch (error) {
@@ -220,4 +221,13 @@ export const fetchSchedulesByTimeRange = async (
       },
     };
   }
+};
+
+const transformSchedule = (schedule: ScheduleTable): Schedule => {
+  return {
+    ...schedule,
+    startTime: new Date(schedule.start_time as string).toLocaleTimeString(),
+    endTime: new Date(schedule.end_time as string).toLocaleTimeString(),
+    date: new Date(schedule.created_at as string).toISOString().split("T")[0],
+  };
 };

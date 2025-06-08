@@ -51,3 +51,11 @@ export interface AuthHeaders {
   "Content-Type": string;
   [key: string]: string;
 }
+
+export interface Schedule {
+  id: number;
+  temperature: number;
+  startTime: string;
+  endTime: string;
+  date: string;
+}
