@@ -7,6 +7,7 @@ import ThermostatSettings, {
 } from "@/app/components/ThermostatSettings";
 import SchedulesCard from "@/app/components/SchedulesCard";
 import { NewSchedule, Schedule } from "@/lib/types/types";
+import { ScheduleTable } from "@/lib/services/schedules";
 
 type FilterStatus = "active" | "completed" | "upcoming" | null;
 
@@ -67,6 +68,29 @@ export default function ThermostatContainer() {
     } finally {
       setIsAuthLoading(false);
     }
+  };
+
+  const transformSchedule = (schedule: ScheduleTable): Schedule => {
+    return {
+      ...schedule,
+      startTime: new Date(schedule.start_time as string).toLocaleTimeString(
+        "en-US",
+        {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        }
+      ),
+      endTime: new Date(schedule.end_time as string).toLocaleTimeString(
+        "en-US",
+        {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        }
+      ),
+      date: new Date(schedule.start_time as string).toISOString().split("T")[0],
+    };
   };
 
   const handleLogin = () => {
@@ -163,7 +187,7 @@ export default function ThermostatContainer() {
           console.error("Error fetching schedules:", result.error);
           setSchedules([]);
         } else {
-          setSchedules(result.data || []);
+          setSchedules(result.data.map(transformSchedule));
         }
       } catch (error) {
         console.error("Error fetching schedules:", error);

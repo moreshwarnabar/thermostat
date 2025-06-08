@@ -64,7 +64,7 @@ export const fetchAllSchedules = async (): Promise<
  */
 export const fetchSchedulesByUserId = async (
   userId: string
-): Promise<ScheduleResponse<Schedule[]>> => {
+): Promise<ScheduleResponse<ScheduleTable[]>> => {
   try {
     if (!userId) {
       return {
@@ -95,7 +95,7 @@ export const fetchSchedulesByUserId = async (
     console.log(data);
 
     return {
-      data: (data || []).map(transformSchedule),
+      data: data || [],
       error: null,
     };
   } catch (error) {
