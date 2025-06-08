@@ -231,7 +231,10 @@ export const createSchedule = async (
   try {
     const { data, error } = await supabaseAdmin
       .from("schedules")
-      .insert(schedule);
+      .insert(schedule)
+      .select();
+
+    console.log("Data:", data);
 
     if (error || !data) {
       console.error("Error creating schedule:", error);
@@ -243,8 +246,6 @@ export const createSchedule = async (
         },
       };
     }
-
-    console.log("Data:", data);
 
     return {
       data: transformSchedule(data[0]),
