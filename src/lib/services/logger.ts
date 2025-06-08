@@ -77,8 +77,17 @@ transports.push(
   })
 );
 
-// Add file transports for production
-if (process.env.NODE_ENV === "production") {
+// Add file transports for production - but not on serverless platforms
+// Detect serverless environments (Vercel, Netlify, AWS Lambda, etc.)
+const isServerless = !!(
+  process.env.VERCEL ||
+  process.env.NETLIFY ||
+  process.env.AWS_LAMBDA_FUNCTION_NAME ||
+  process.env.FUNCTIONS_RUNTIME ||
+  process.env.DISABLE_FILE_LOGGING
+);
+
+if (process.env.NODE_ENV === "production" && !isServerless) {
   // Error log file
   transports.push(
     new winston.transports.File({
