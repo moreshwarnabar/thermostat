@@ -6,7 +6,6 @@ import ThermostatSettings, {
   ThermostatData,
 } from "@/app/components/ThermostatSettings";
 import SchedulesCard from "@/app/components/SchedulesCard";
-import { fetchSchedulesByUserId } from "@/lib/services/schedules";
 import { Schedule } from "@/lib/types/types";
 
 type FilterStatus = "active" | "completed" | "upcoming" | null;
@@ -137,8 +136,25 @@ export default function ThermostatContainer() {
 
   useEffect(() => {
     const fetchSchedules = async () => {
-      const response = await fetchSchedulesByUserId(userId as string);
-      setSchedules(response.data || []);
+      try {
+        const response = await fetch(`/api/schedules?userId=${userId}`);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        if (result.error) {
+          console.error("Error fetching schedules:", result.error);
+          setSchedules([]);
+        } else {
+          setSchedules(result.data || []);
+        }
+      } catch (error) {
+        console.error("Error fetching schedules:", error);
+        setSchedules([]);
+      }
     };
 
     if (isAuthenticated && userId) {
