@@ -112,6 +112,24 @@ const setTemp = async (creds: string) => {
   return await executeCommand(url, headers, body);
 };
 
+// Create a version that accepts custom temperature
+export const setCustomTemp = async (creds: string, temperature: number) => {
+  const url = `${THERMO_BASE_URL}/${THERMO_PROJECT_ID}/devices/${THERMO_DEVICE_ID}:executeCommand`;
+  const headers = {
+    Authorization: `Bearer ${creds}`,
+    "Content-Type": "application/json",
+  };
+
+  const body = {
+    command: `${process.env.BASE_COMMAND}TemperatureSetPoint.SetCool`,
+    params: {
+      coolCelsius: temperature,
+    },
+  };
+
+  return await executeCommand(url, headers, body);
+};
+
 const executeCommand = async (
   url: string,
   headers: AuthHeaders,
@@ -140,5 +158,8 @@ const executeCommand = async (
   }
   return false;
 };
+
+// Export the helper methods
+export { setEcoOff, setMode, executeCommand };
 
 export default updateThermostat;
