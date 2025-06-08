@@ -92,6 +92,8 @@ export const fetchSchedulesByUserId = async (
       };
     }
 
+    console.log(data);
+
     return {
       data: (data || []).map(transformSchedule),
       error: null,
@@ -226,8 +228,19 @@ export const fetchSchedulesByTimeRange = async (
 const transformSchedule = (schedule: ScheduleTable): Schedule => {
   return {
     ...schedule,
-    startTime: new Date(schedule.start_time as string).toLocaleTimeString(),
-    endTime: new Date(schedule.end_time as string).toLocaleTimeString(),
+    startTime: new Date(schedule.start_time as string).toLocaleTimeString(
+      "en-US",
+      {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }
+    ),
+    endTime: new Date(schedule.end_time as string).toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }),
     date: new Date(schedule.created_at as string).toISOString().split("T")[0],
   };
 };
