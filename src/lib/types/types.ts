@@ -59,3 +59,10 @@ export interface Schedule {
   endTime: string;
   date: string;
 }
+
+export interface NewSchedule {
+  user_id: string;
+  temperature: number;
+  start_time: string;
+  end_time: string;
+}

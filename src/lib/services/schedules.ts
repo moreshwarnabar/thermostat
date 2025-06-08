@@ -1,6 +1,6 @@
 import supabaseAdmin from "@/lib/services/supabaseAdmin";
 import { Tables } from "@/lib/types/supabase";
-import { Schedule } from "../types/types";
+import { NewSchedule, Schedule } from "../types/types";
 
 // Type alias for the Schedule row from Supabase
 export type ScheduleTable = Tables<"schedules">;
@@ -219,6 +219,43 @@ export const fetchSchedulesByTimeRange = async (
       error: {
         message:
           "An unexpected error occurred while fetching schedules by time range",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+    };
+  }
+};
+
+export const createSchedule = async (
+  schedule: NewSchedule
+): Promise<ScheduleResponse<Schedule>> => {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from("schedules")
+      .insert(schedule);
+
+    if (error || !data) {
+      console.error("Error creating schedule:", error);
+      return {
+        data: null,
+        error: {
+          message: "Failed to create schedule",
+          details: error?.message || "Unknown error",
+        },
+      };
+    }
+
+    console.log("Data:", data);
+
+    return {
+      data: transformSchedule(data[0]),
+      error: null,
+    };
+  } catch (error) {
+    console.error("Unexpected error creating schedule:", error);
+    return {
+      data: null,
+      error: {
+        message: "An unexpected error occurred while creating schedule",
         details: error instanceof Error ? error.message : "Unknown error",
       },
     };

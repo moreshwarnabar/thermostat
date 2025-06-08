@@ -6,7 +6,7 @@ import ThermostatSettings, {
   ThermostatData,
 } from "@/app/components/ThermostatSettings";
 import SchedulesCard from "@/app/components/SchedulesCard";
-import { Schedule } from "@/lib/types/types";
+import { NewSchedule, Schedule } from "@/lib/types/types";
 
 type FilterStatus = "active" | "completed" | "upcoming" | null;
 
@@ -85,45 +85,49 @@ export default function ThermostatContainer() {
     console.log("Submitting schedule:", currentSettings);
 
     try {
-      const newSchedule: Schedule = {
-        id: Math.max(...schedules.map((s) => s.id), 0) + 1, // Generate unique ID
+      const newSchedule: NewSchedule = {
         temperature: currentSettings.temperature,
-        startTime: `${currentSettings.startTime.hour
-          .toString()
-          .padStart(2, "0")}:${currentSettings.startTime.minute
-          .toString()
-          .padStart(2, "0")}`,
-        endTime: `${currentSettings.endTime.hour
-          .toString()
-          .padStart(2, "0")}:${currentSettings.endTime.minute
-          .toString()
-          .padStart(2, "0")}`,
-        date: currentSettings.startTime.date.toISOString().split("T")[0], // Use actual start date
+        start_time: new Date(
+          currentSettings.startTime.date.getFullYear(),
+          currentSettings.startTime.date.getMonth(),
+          currentSettings.startTime.date.getDate(),
+          currentSettings.startTime.hour,
+          currentSettings.startTime.minute,
+          0,
+          0
+        ).toISOString(),
+        end_time: new Date(
+          currentSettings.endTime.date.getFullYear(),
+          currentSettings.endTime.date.getMonth(),
+          currentSettings.endTime.date.getDate(),
+          currentSettings.endTime.hour,
+          currentSettings.endTime.minute,
+          0,
+          0
+        ).toISOString(),
+        user_id: userId as string,
       };
 
-      // Add the new schedule to the state
-      setSchedules((prevSchedules) => [...prevSchedules, newSchedule]);
+      console.log("New schedule:", newSchedule);
 
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/schedule', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(currentSettings),
-      // });
+      const response = await fetch("/api/schedules", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newSchedule),
+      });
 
-      alert(
-        `Schedule submitted!\nTemperature: ${
-          currentSettings.temperature
-        }°C\nStart: ${currentSettings.startTime.hour
-          .toString()
-          .padStart(2, "0")}:${currentSettings.startTime.minute
-          .toString()
-          .padStart(2, "0")}\nEnd: ${currentSettings.endTime.hour
-          .toString()
-          .padStart(2, "0")}:${currentSettings.endTime.minute
-          .toString()
-          .padStart(2, "0")}`
-      );
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (result.error) {
+        console.error("Error submitting schedule:", result.error);
+        alert("Failed to submit schedule. Please try again.");
+      } else {
+        setSchedules((prevSchedules) => [...prevSchedules, result.data]);
+      }
     } catch (error) {
       console.error("Error submitting schedule:", error);
       alert("Failed to submit schedule. Please try again.");
