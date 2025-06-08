@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { google } from "googleapis";
-import { storeAuthToken } from "@/lib/services/db";
+import { storeAuthToken } from "@/lib/services/auth";
 import { Credentials } from "@/lib/types/types";
 
 const oauth2Client = new google.auth.OAuth2(

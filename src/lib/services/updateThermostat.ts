@@ -4,7 +4,7 @@ import {
   ThermostatEvent,
 } from "@/lib/types/types";
 import { validateEvent } from "@/lib/validators/thermostat";
-import { getAuthToken } from "@/lib/services/db";
+import { getAuthToken } from "@/lib/services/auth";
 
 const TARGET_TEMP = 25;
 const THERMO_BASE_URL = process.env.THERMO_BASE_URL;

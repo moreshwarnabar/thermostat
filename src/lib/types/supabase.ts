@@ -40,6 +40,7 @@ export type Database = {
           end_time: string | null
           id: number
           start_time: string | null
+          temperature: number
           user_id: string | null
         }
         Insert: {
@@ -47,6 +48,7 @@ export type Database = {
           end_time?: string | null
           id?: number
           start_time?: string | null
+          temperature: number
           user_id?: string | null
         }
         Update: {
@@ -54,6 +56,7 @@ export type Database = {
           end_time?: string | null
           id?: number
           start_time?: string | null
+          temperature?: number
           user_id?: string | null
         }
         Relationships: [

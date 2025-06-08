@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getAuthTokenFromCookies } from "@/lib/services/db";
+import { getAuthTokenFromCookies } from "@/lib/services/auth";
 
 export async function GET() {
   try {
