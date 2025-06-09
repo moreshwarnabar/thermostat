@@ -174,7 +174,10 @@ export default function ThermostatContainer() {
         console.error("Error submitting schedule:", result.error);
         alert("Failed to submit schedule. Please try again.");
       } else {
-        setSchedules((prevSchedules) => [...prevSchedules, result.data]);
+        setSchedules((prevSchedules) => [
+          ...prevSchedules,
+          transformSchedule(result.data),
+        ]);
       }
     } catch (error) {
       console.error("Error submitting schedule:", error);
