@@ -248,7 +248,7 @@ export const createSchedule = async (
     }
 
     return {
-      data: transformSchedule(data[0]),
+      data: data[0],
       error: null,
     };
   } catch (error) {
@@ -261,24 +261,4 @@ export const createSchedule = async (
       },
     };
   }
-};
-
-const transformSchedule = (schedule: ScheduleTable): Schedule => {
-  return {
-    ...schedule,
-    startTime: new Date(schedule.start_time as string).toLocaleTimeString(
-      "en-US",
-      {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      }
-    ),
-    endTime: new Date(schedule.end_time as string).toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    }),
-    date: new Date(schedule.start_time as string).toISOString().split("T")[0],
-  };
 };
