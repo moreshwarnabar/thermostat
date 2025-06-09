@@ -230,12 +230,12 @@ const triggerThermostatUpdate = async (
 
         const deviceTraits = deviceInfo.traits;
         thermoLogger.info("Device Traits: ", deviceTraits);
-        if (!deviceTraits[`${process.env.BASE_TRAIT}Mode`]) {
-          thermoLogger.error("Thermostat does not support mode");
+        if (!deviceTraits[`${process.env.THERMO_BASE_TRAIT}Mode`]) {
+          thermoLogger.error("Trait not found");
           return false;
         }
 
-        const currMode = deviceTraits[`${process.env.BASE_TRAIT}Mode`];
+        const currMode = deviceTraits[`${process.env.THERMO_BASE_TRAIT}Mode`];
         thermoLogger.info("Current Mode: ", currMode);
         if (currMode === "ECO") {
           const ecoSuccess = await setEcoOff(creds);
