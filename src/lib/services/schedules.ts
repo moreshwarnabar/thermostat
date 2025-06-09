@@ -227,7 +227,7 @@ export const fetchSchedulesByTimeRange = async (
 
 export const createSchedule = async (
   schedule: NewSchedule
-): Promise<ScheduleResponse<Schedule>> => {
+): Promise<ScheduleResponse<ScheduleTable>> => {
   try {
     const { data, error } = await supabaseAdmin
       .from("schedules")
