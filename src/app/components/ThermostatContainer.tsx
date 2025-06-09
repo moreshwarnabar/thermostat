@@ -72,7 +72,8 @@ export default function ThermostatContainer() {
 
   const transformSchedule = (schedule: ScheduleTable): Schedule => {
     return {
-      ...schedule,
+      id: schedule.id,
+      temperature: schedule.temperature,
       startTime: new Date(schedule.start_time as string).toLocaleTimeString(
         "en-US",
         {
@@ -89,7 +90,20 @@ export default function ThermostatContainer() {
           hour12: false,
         }
       ),
-      date: (schedule.start_time as string).split("T")[0],
+      date: new Date(schedule.start_time as string).toLocaleDateString(
+        "en-US",
+        {
+          month: "short",
+          day: "numeric",
+          weekday: "short",
+        }
+      ),
+      status:
+        new Date(schedule.start_time as string) > new Date()
+          ? "upcoming"
+          : new Date(schedule.end_time as string) < new Date()
+          ? "completed"
+          : "active",
     };
   };
 

@@ -58,6 +58,7 @@ export interface Schedule {
   startTime: string;
   endTime: string;
   date: string;
+  status: "active" | "completed" | "upcoming";
 }
 
 export interface NewSchedule {

@@ -1,12 +1,5 @@
+import { Schedule } from "@/lib/types/types";
 import React from "react";
-
-interface Schedule {
-  id: number;
-  temperature: number;
-  startTime: string;
-  endTime: string;
-  date: string;
-}
 
 type FilterStatus = "active" | "completed" | "upcoming" | null;
 
@@ -21,43 +14,7 @@ const SchedulesCard: React.FC<SchedulesCardProps> = ({
   filterStatus,
   onFilterChange,
 }) => {
-  // Function to determine schedule status based on current time
-  const getScheduleStatus = (
-    schedule: Schedule
-  ): "active" | "completed" | "upcoming" => {
-    const now = new Date();
-
-    // Parse date manually to avoid timezone issues
-    const [year, month, day] = schedule.date.split("-").map(Number);
-    const scheduleDate = new Date(year, month - 1, day); // month is 0-indexed
-
-    // Parse start and end times
-    const [startHour, startMinute] = schedule.startTime.split(":").map(Number);
-    const [endHour, endMinute] = schedule.endTime.split(":").map(Number);
-
-    const startDateTime = new Date(scheduleDate);
-    startDateTime.setHours(startHour, startMinute, 0, 0);
-
-    const endDateTime = new Date(scheduleDate);
-    endDateTime.setHours(endHour, endMinute, 0, 0);
-
-    if (now < startDateTime) {
-      return "upcoming";
-    } else if (now > endDateTime) {
-      return "completed";
-    } else {
-      return "active";
-    }
-  };
-
-  // Add status to schedules dynamically
-  const schedulesWithStatus = schedules.map((schedule) => ({
-    ...schedule,
-    status: getScheduleStatus(schedule),
-  }));
-
-  // Filter schedules based on selected status
-  const filteredSchedules = schedulesWithStatus.filter(
+  const filteredSchedules = schedules.filter(
     (schedule) => filterStatus === null || schedule.status === filterStatus
   );
 
@@ -93,23 +50,12 @@ const SchedulesCard: React.FC<SchedulesCardProps> = ({
 
   const getStatusCount = (status: FilterStatus) => {
     if (status === null) return schedules.length;
-    return schedulesWithStatus.filter((schedule) => schedule.status === status)
-      .length;
+    return schedules.filter((schedule) => schedule.status === status).length;
   };
 
   const handleFilterClick = (status: FilterStatus) => {
     // Toggle filter: if clicking the same filter, deselect it (set to null)
     onFilterChange(filterStatus === status ? null : status);
-  };
-
-  const formatDate = (dateStr: string) => {
-    const [year, month, day] = dateStr.split("-").map(Number);
-    const date = new Date(year, month - 1, day); // month is 0-indexed
-    return date.toLocaleDateString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-    });
   };
 
   return (
@@ -186,7 +132,7 @@ const SchedulesCard: React.FC<SchedulesCardProps> = ({
                 className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 <td className="py-4 px-4 text-gray-800 dark:text-gray-200 font-medium">
-                  {formatDate(schedule.date)}
+                  {schedule.date}
                 </td>
                 <td className="py-4 px-4 text-gray-800 dark:text-gray-200">
                   <span className="inline-flex items-center">
