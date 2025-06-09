@@ -1,7 +1,12 @@
 import supabaseAdmin from "@/lib/services/supabaseAdmin";
 import { ScheduleTable } from "@/lib/services/schedules";
 import { getAuthToken } from "@/lib/services/auth";
-import { setMode, setCustomTemp } from "@/lib/services/updateThermostat";
+import {
+  setMode,
+  setCustomTemp,
+  getDeviceInfo,
+  setEcoOff,
+} from "@/lib/services/updateThermostat";
 import { logger } from "@/lib/services/logger";
 
 interface ScheduleProcessorResult {
@@ -215,6 +220,28 @@ const triggerThermostatUpdate = async (
     while (retryCount < 3) {
       try {
         let success = true;
+
+        const deviceInfo = await getDeviceInfo(creds);
+        if (!deviceInfo) {
+          thermoLogger.error("Failed to get device info");
+          return false;
+        }
+
+        const deviceTraits = deviceInfo.traits;
+        if (!deviceTraits.includes(`${process.env.BASE_TRAIT}Mode`)) {
+          thermoLogger.error("Thermostat does not support mode");
+          return false;
+        }
+
+        const currMode = deviceTraits[`${process.env.BASE_TRAIT}Mode`];
+        if (currMode === "ECO") {
+          const ecoSuccess = await setEcoOff(creds);
+          if (!ecoSuccess) {
+            thermoLogger.warn("Failed to set thermostat to ECO mode");
+            return false;
+          }
+          thermoLogger.info("Successfully switched off ECO mode");
+        }
 
         // Set thermostat to COOL mode
         thermoLogger.info("Setting thermostat to COOL mode", {

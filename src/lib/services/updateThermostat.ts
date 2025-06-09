@@ -12,6 +12,22 @@ const THERMO_BASE_URL = process.env.THERMO_BASE_URL;
 const THERMO_PROJECT_ID = process.env.THERMO_PROJECT_ID;
 const THERMO_DEVICE_ID = process.env.THERMO_DEVICE_ID;
 
+export const getDeviceInfo = async (creds: string) => {
+  const deviceInfoLogger = logger.thermostatOperation("get_device_info");
+
+  const url = `${THERMO_BASE_URL}/${THERMO_PROJECT_ID}/devices/${THERMO_DEVICE_ID}`;
+  const headers = {
+    Authorization: `Bearer ${creds}`,
+    "Content-Type": "application/json",
+  };
+
+  deviceInfoLogger.debug("Getting device info", { url, headers });
+  const response = await fetch(url, { headers });
+  const data = await response.json();
+  deviceInfoLogger.debug("Device info", { data });
+  return data;
+};
+
 const updateThermostat = async (event: ThermostatEvent) => {
   const thermostatLogger = logger.thermostatOperation("update_thermostat", {
     eventId: event.eventId,
@@ -105,7 +121,7 @@ const updateThermostat = async (event: ThermostatEvent) => {
   );
 };
 
-const setEcoOff = async (creds: string) => {
+export const setEcoOff = async (creds: string) => {
   const ecoLogger = logger.thermostatOperation("set_eco_off");
 
   const url = `${THERMO_BASE_URL}/${THERMO_PROJECT_ID}/devices/${THERMO_DEVICE_ID}:executeCommand`;
@@ -125,7 +141,7 @@ const setEcoOff = async (creds: string) => {
   return await executeCommand(url, headers, body);
 };
 
-const setMode = async (creds: string, mode: string) => {
+export const setMode = async (creds: string, mode: string) => {
   const modeLogger = logger.thermostatOperation("set_mode", {
     targetMode: mode,
   });
@@ -137,7 +153,7 @@ const setMode = async (creds: string, mode: string) => {
   };
 
   const body = {
-    command: `${process.env.BASE_COMMAND}Thermostat.SetMode`,
+    command: `${process.env.BASE_COMMAND}Mode.SetMode`,
     params: {
       mode: mode,
     },
@@ -260,4 +276,3 @@ const executeCommand = async (
 };
 
 export default updateThermostat;
-export { setMode };
