@@ -8,15 +8,12 @@ export async function POST() {
       `[${new Date().toISOString()}] Starting automatic token refresh for all users`
     );
 
-    // Get all user tokens that are close to expiry (within 10 minutes)
-    const tenMinutesFromNow = new Date(
-      Date.now() + 10 * 60 * 1000
-    ).toISOString();
+    const oneHourFromNow = new Date(Date.now() + 60 * 60 * 1000).toISOString();
 
     const { data: userTokens, error: fetchError } = await supabaseAdmin
       .from("user_tokens")
       .select("*")
-      .lt("expires_at", tenMinutesFromNow)
+      .lt("expires_at", oneHourFromNow)
       .not("refresh_token", "is", null);
 
     if (fetchError) {
@@ -45,7 +42,6 @@ export async function POST() {
     let failureCount = 0;
     const results = [];
 
-    // Refresh tokens for each user
     for (const userToken of userTokens) {
       try {
         console.log(`Refreshing token for user: ${userToken.user_id}`);
@@ -69,7 +65,6 @@ export async function POST() {
           continue;
         }
 
-        // Update the database with new tokens
         const { error: updateError } = await supabaseAdmin
           .from("user_tokens")
           .update({
