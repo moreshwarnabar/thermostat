@@ -26,7 +26,10 @@ const SchedulesCard: React.FC<SchedulesCardProps> = ({
     schedule: Schedule
   ): "active" | "completed" | "upcoming" => {
     const now = new Date();
-    const scheduleDate = new Date(schedule.date);
+
+    // Parse date manually to avoid timezone issues
+    const [year, month, day] = schedule.date.split("-").map(Number);
+    const scheduleDate = new Date(year, month - 1, day); // month is 0-indexed
 
     // Parse start and end times
     const [startHour, startMinute] = schedule.startTime.split(":").map(Number);
