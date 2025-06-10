@@ -222,21 +222,18 @@ const triggerThermostatUpdate = async (
         let success = true;
 
         const deviceInfo = await getDeviceInfo(creds);
-        thermoLogger.info("Device Info: ", deviceInfo);
         if (!deviceInfo) {
-          thermoLogger.error("Failed to get device info");
+          thermoLogger.warn("Failed to get device info");
           return false;
         }
 
         const deviceTraits = deviceInfo.traits;
-        thermoLogger.info("Device Traits: ", deviceTraits);
         if (!deviceTraits[`${process.env.THERMO_BASE_TRAIT}Mode`]) {
-          thermoLogger.error("Trait not found");
+          thermoLogger.warn("Trait not found");
           return false;
         }
 
         const currMode = deviceTraits[`${process.env.THERMO_BASE_TRAIT}Mode`];
-        thermoLogger.info("Current Mode: ", currMode);
         if (currMode === "ECO") {
           const ecoSuccess = await setEcoOff(creds);
           if (!ecoSuccess) {

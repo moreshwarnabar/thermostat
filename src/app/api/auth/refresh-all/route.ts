@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { google } from "googleapis";
 import supabaseAdmin from "@/lib/services/supabaseAdmin";
+import { logger } from "@/lib/services/logger";
 
 export async function POST() {
+  const refreshLogger = logger.authOperation("refresh_all_tokens");
+
   try {
-    console.log(
-      `[${new Date().toISOString()}] Starting automatic token refresh for all users`
-    );
+    refreshLogger.info("Starting automatic token refresh for all users");
 
     const oneHourFromNow = new Date(Date.now() + 60 * 60 * 1000).toISOString();
 
@@ -17,7 +18,10 @@ export async function POST() {
       .not("refresh_token", "is", null);
 
     if (fetchError) {
-      console.error("Error fetching user tokens:", fetchError);
+      refreshLogger.error("Error fetching user tokens", {
+        error: fetchError.message,
+        details: fetchError.details,
+      });
       return NextResponse.json(
         { error: "Failed to fetch user tokens" },
         { status: 500 }
@@ -25,7 +29,7 @@ export async function POST() {
     }
 
     if (!userTokens || userTokens.length === 0) {
-      console.log("No tokens need refreshing at this time");
+      refreshLogger.info("No tokens need refreshing at this time");
       return NextResponse.json({
         message: "No tokens needed refreshing",
         refreshed_count: 0,
@@ -43,8 +47,12 @@ export async function POST() {
     const results = [];
 
     for (const userToken of userTokens) {
+      const userLogger = refreshLogger.setContext({
+        userId: userToken.user_id,
+      });
+
       try {
-        console.log(`Refreshing token for user: ${userToken.user_id}`);
+        userLogger.info("Refreshing token for user");
 
         oauth2Client.setCredentials({
           refresh_token: userToken.refresh_token,
@@ -53,9 +61,7 @@ export async function POST() {
         const { credentials } = await oauth2Client.refreshAccessToken();
 
         if (!credentials.access_token) {
-          console.error(
-            `Failed to refresh token for user ${userToken.user_id}: No access token received`
-          );
+          userLogger.error("Failed to refresh token: No access token received");
           failureCount++;
           results.push({
             user_id: userToken.user_id,
@@ -77,10 +83,10 @@ export async function POST() {
           .eq("user_id", userToken.user_id);
 
         if (updateError) {
-          console.error(
-            `Failed to update tokens for user ${userToken.user_id}:`,
-            updateError
-          );
+          userLogger.error("Failed to update tokens", {
+            error: updateError.message,
+            details: updateError.details,
+          });
           failureCount++;
           results.push({
             user_id: userToken.user_id,
@@ -88,9 +94,7 @@ export async function POST() {
             error: updateError.message,
           });
         } else {
-          console.log(
-            `Successfully refreshed token for user: ${userToken.user_id}`
-          );
+          userLogger.info("Successfully refreshed token");
           successCount++;
           results.push({
             user_id: userToken.user_id,
@@ -101,10 +105,10 @@ export async function POST() {
           });
         }
       } catch (error) {
-        console.error(
-          `Error refreshing token for user ${userToken.user_id}:`,
-          error
-        );
+        userLogger.error("Error refreshing token", {
+          error: error instanceof Error ? error.message : "Unknown error",
+          stack: error instanceof Error ? error.stack : undefined,
+        });
         failureCount++;
         results.push({
           user_id: userToken.user_id,
@@ -114,9 +118,11 @@ export async function POST() {
       }
     }
 
-    console.log(
-      `Token refresh completed: ${successCount} successful, ${failureCount} failed`
-    );
+    refreshLogger.info("Token refresh completed", {
+      successfulRefreshes: successCount,
+      failedRefreshes: failureCount,
+      totalTokens: userTokens.length,
+    });
 
     return NextResponse.json({
       message: "Token refresh completed",
@@ -127,7 +133,10 @@ export async function POST() {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error("Error in automatic token refresh:", error);
+    refreshLogger.error("Error in automatic token refresh", {
+      error: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return NextResponse.json(
       { error: "Internal server error during token refresh" },
       { status: 500 }
