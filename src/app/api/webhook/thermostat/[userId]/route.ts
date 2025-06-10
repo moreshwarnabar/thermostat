@@ -4,12 +4,12 @@ import { logger } from "@/lib/services/logger";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   const webhookLogger = logger.apiStart("webhook_thermostat");
 
   try {
-    const { userId } = params;
+    const { userId } = await params;
 
     if (!userId) {
       webhookLogger.warn("No userId found in URL parameters");
@@ -67,12 +67,13 @@ export async function POST(
 
     return NextResponse.json({ status: "success" }, { status: 200 });
   } catch (error) {
+    const { userId } = await params;
     webhookLogger.apiError(
       "webhook_thermostat",
       error instanceof Error ? error : new Error("Unknown error"),
       {
         hasBody: !!request.body,
-        userId: params?.userId,
+        userId: userId,
       }
     );
     return NextResponse.json(
