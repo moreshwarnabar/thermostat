@@ -2,10 +2,23 @@ import { updateThermostat } from "@/lib/services/updateThermostat";
 import { NextRequest, NextResponse } from "next/server";
 import { logger } from "@/lib/services/logger";
 
-export async function POST(request: NextRequest) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { userId: string } }
+) {
   const webhookLogger = logger.apiStart("webhook_thermostat");
 
   try {
+    const { userId } = params;
+
+    if (!userId) {
+      webhookLogger.warn("No userId found in URL parameters");
+      return NextResponse.json(
+        { error: "userId is required in URL path" },
+        { status: 400 }
+      );
+    }
+
     const body = await request.json();
 
     const messageData = body?.message?.data;
@@ -25,15 +38,22 @@ export async function POST(request: NextRequest) {
       parsedData = JSON.parse(decodedData);
       webhookLogger.info("Decoded Pub/Sub message successfully", {
         eventId: parsedData?.eventId,
-        userId: parsedData?.userId,
+        userId: userId, // Using userId from URL params
         timestamp: parsedData?.timestamp,
       });
 
-      await updateThermostat(parsedData);
+      // Include userId from URL params in the data passed to updateThermostat
+      const dataWithUserId = {
+        ...parsedData,
+        userId: userId,
+      };
+
+      await updateThermostat(dataWithUserId);
       webhookLogger.apiEnd("webhook_thermostat", { success: true });
     } catch (parseError) {
       webhookLogger.error("Error parsing decoded data into JSON", {
         decodedData,
+        userId,
         error:
           parseError instanceof Error
             ? parseError.message
@@ -52,6 +72,7 @@ export async function POST(request: NextRequest) {
       error instanceof Error ? error : new Error("Unknown error"),
       {
         hasBody: !!request.body,
+        userId: params?.userId,
       }
     );
     return NextResponse.json(
