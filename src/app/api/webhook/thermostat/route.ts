@@ -1,4 +1,4 @@
-import updateThermostat from "@/lib/services/updateThermostat";
+import { updateThermostat } from "@/lib/services/updateThermostat";
 import { NextRequest, NextResponse } from "next/server";
 import { logger } from "@/lib/services/logger";
 

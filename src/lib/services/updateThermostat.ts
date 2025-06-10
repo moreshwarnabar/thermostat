@@ -28,7 +28,7 @@ export const getDeviceInfo = async (creds: string) => {
   return data;
 };
 
-const updateThermostat = async (event: ThermostatEvent) => {
+export const updateThermostat = async (event: ThermostatEvent) => {
   const thermostatLogger = logger.thermostatOperation("update_thermostat", {
     eventId: event.eventId,
     userId: event.userId,
@@ -274,5 +274,3 @@ const executeCommand = async (
   });
   return false;
 };
-
-export default updateThermostat;
