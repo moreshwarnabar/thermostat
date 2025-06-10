@@ -131,7 +131,7 @@ export const setEcoOff = async (creds: string) => {
   };
 
   const body = {
-    command: `${process.env.BASE_COMMAND}Eco.SetMode`,
+    command: `${process.env.THERMO_BASE_COMMAND}Eco.SetMode`,
     params: {
       mode: "OFF",
     },
@@ -153,7 +153,7 @@ export const setMode = async (creds: string, mode: string) => {
   };
 
   const body = {
-    command: `${process.env.BASE_COMMAND}Mode.SetMode`,
+    command: `${process.env.THERMO_BASE_COMMAND}Mode.SetMode`,
     params: {
       mode: mode,
     },
@@ -175,7 +175,7 @@ const setTemp = async (creds: string) => {
   };
 
   const body = {
-    command: `${process.env.BASE_COMMAND}TemperatureSetPoint.SetCool`,
+    command: `${process.env.THERMO_BASE_COMMAND}TemperatureSetPoint.SetCool`,
     params: {
       coolCelsius: TARGET_TEMP,
     },
@@ -201,7 +201,7 @@ export const setCustomTemp = async (creds: string, temperature: number) => {
   };
 
   const body = {
-    command: `${process.env.BASE_COMMAND}TemperatureSetPoint.SetCool`,
+    command: `${process.env.THERMO_BASE_COMMAND}TemperatureSetPoint.SetCool`,
     params: {
       coolCelsius: temperature,
     },
