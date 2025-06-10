@@ -7,7 +7,6 @@ import { validateEvent } from "@/lib/validators/thermostat";
 import { getAuthToken } from "@/lib/services/auth";
 import { logger } from "@/lib/services/logger";
 
-const TARGET_TEMP = 25;
 const THERMO_BASE_URL = process.env.THERMO_BASE_URL;
 const THERMO_PROJECT_ID = process.env.THERMO_PROJECT_ID;
 const THERMO_DEVICE_ID = process.env.THERMO_DEVICE_ID;
@@ -39,7 +38,7 @@ export const updateThermostat = async (event: ThermostatEvent) => {
     timestamp: event.timestamp,
   });
 
-  const { shouldBeProcessed, deviceInfo } = validateEvent(event);
+  const { shouldBeProcessed, deviceInfo } = await validateEvent(event);
 
   if (!shouldBeProcessed) {
     thermostatLogger.info("Event does not require thermostat update", {
@@ -56,7 +55,7 @@ export const updateThermostat = async (event: ThermostatEvent) => {
     return;
   }
 
-  const { mode, eco, curr_temp } = deviceInfo;
+  const { mode, eco, curr_temp, target_temp } = deviceInfo;
   let retryCount = 0;
 
   while (retryCount < 3) {
@@ -79,13 +78,13 @@ export const updateThermostat = async (event: ThermostatEvent) => {
           retryAttempt: retryCount + 1,
         });
         done = await setMode(creds, "COOL");
-      } else if (curr_temp !== TARGET_TEMP) {
+      } else if (curr_temp !== target_temp) {
         thermostatLogger.info("Setting temperature to target", {
           currentTemp: curr_temp,
-          targetTemp: TARGET_TEMP,
+          targetTemp: target_temp,
           retryAttempt: retryCount + 1,
         });
-        done = await setTemp(creds);
+        done = await setCustomTemp(creds, target_temp);
       }
 
       if (!done) {
@@ -160,31 +159,6 @@ export const setMode = async (creds: string, mode: string) => {
   };
 
   modeLogger.debug("Setting thermostat mode", { mode, command: body.command });
-  return await executeCommand(url, headers, body);
-};
-
-const setTemp = async (creds: string) => {
-  const tempLogger = logger.thermostatOperation("set_temp", {
-    targetTemp: TARGET_TEMP,
-  });
-
-  const url = `${THERMO_BASE_URL}/${THERMO_PROJECT_ID}/devices/${THERMO_DEVICE_ID}:executeCommand`;
-  const headers = {
-    Authorization: `Bearer ${creds}`,
-    "Content-Type": "application/json",
-  };
-
-  const body = {
-    command: `${process.env.THERMO_BASE_COMMAND}TemperatureSetPoint.SetCool`,
-    params: {
-      coolCelsius: TARGET_TEMP,
-    },
-  };
-
-  tempLogger.debug("Setting temperature", {
-    temperature: TARGET_TEMP,
-    command: body.command,
-  });
   return await executeCommand(url, headers, body);
 };
 

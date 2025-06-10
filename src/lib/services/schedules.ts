@@ -225,6 +225,55 @@ export const fetchSchedulesByTimeRange = async (
   }
 };
 
+export const getCurrentSchedule = async (
+  userId: string
+): Promise<ScheduleResponse<ScheduleTable>> => {
+  const now = new Date();
+  const currentTime = now.toISOString();
+
+  try {
+    const { data: schedules, error } = await supabaseAdmin
+      .from("schedules")
+      .select("*")
+      .eq("user_id", userId)
+      .lte("start_time", currentTime)
+      .gte("end_time", currentTime)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching current schedule:", error);
+      return {
+        data: null,
+        error: {
+          message: "Failed to fetch current schedule",
+          details: error.message,
+        },
+      };
+    }
+
+    if (schedules.length === 0) {
+      return {
+        data: null,
+        error: null,
+      };
+    }
+
+    return {
+      data: schedules[0],
+      error: null,
+    };
+  } catch (error) {
+    console.error("Unexpected error fetching current schedule:", error);
+    return {
+      data: null,
+      error: {
+        message: "An unexpected error occurred while fetching current schedule",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+    };
+  }
+};
+
 export const createSchedule = async (
   schedule: NewSchedule
 ): Promise<ScheduleResponse<ScheduleTable>> => {
