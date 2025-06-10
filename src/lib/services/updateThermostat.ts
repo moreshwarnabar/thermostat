@@ -201,7 +201,7 @@ export const setCustomTemp = async (creds: string, temperature: number) => {
   };
 
   const body = {
-    command: `${process.env.THERMO_BASE_COMMAND}TemperatureSetPoint.SetCool`,
+    command: `${process.env.THERMO_BASE_COMMAND}TemperatureSetpoint.SetCool`,
     params: {
       coolCelsius: temperature,
     },
